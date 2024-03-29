@@ -1,0 +1,62 @@
+*
+{
+	color: lime;
+}
+
+body
+{
+	background-color: black;
+}
+
+input[type=submit]
+{
+	color: black;
+	font-weight: bold;
+}
+
+.module
+{
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.power
+{
+	display: inline-block;
+	font-size: 26px;
+}
+
+input[type=number]
+{
+	width: 60px;
+	height: 60px;
+	font-size: 26px;
+	background-color: #101010;
+	text-align: center;
+}
+
+canvas
+{
+	border: solid lime 1px;
+}
+
+#chartContainer
+{
+	height: 400px;
+	width: 100%;
+	background-color: #101010;
+}
+
+/* style for arrow buttons */
+input[type=number]::-webkit-inner-spin-button
+{
+	position: absolute;
+	top: 0;
+	right: 0;
+	height: 100%;
+}
+
+p
+{
+	font-size: 28px;
+}

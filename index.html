@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Faktoryzacja Pierwiastków</title>
+	<link rel="stylesheet" type="text/css" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Faktoryzacja wielomianów</h1>
+
+    <h2>Postać ogólna:</h2>
+    <p id="mainPolynomial"></p>
+    <div id = "modulesContainer">
+        <div class="module">
+            <input type="number" class="coefficient" placeholder="0">
+            <p class="power"></p>
+        </div>
+    </div>
+
+    <div id="result">
+        <h2>Postać iloczynowa:</h2>
+        <p id="factoredPolynomial"></p>
+        <h2>Kroki:</h2>
+        <p id="methodsContent"></p>
+    </div>
+
+    <h2>Wykres:</h2>
+    <div id="chartContainer">
+        <canvas id="chart" width="400" height="200"></canvas>
+    </div>
+
+    <script src="CustomNrSystem.js"></script>
+    <script src="Polynomial.js"></script>
+    <script src="polynomial_factorization_methods.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
