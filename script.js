@@ -1,5 +1,7 @@
-var inputs = window.document.getElementsByClassName("coefficient");
-var modules = window.document.getElementsByClassName("module");
+let inputs = window.document.getElementsByClassName("coefficient");
+let modules = window.document.getElementsByClassName("module");
+let methodSelector = window.document.getElementById("methodSelector");
+let pols = [];
 
 var options =
 	{
@@ -24,6 +26,7 @@ var options =
 			}
 		}
 	};
+
 var data =
 	{
 		labels: [],
@@ -48,6 +51,8 @@ setup();
 
 function setup()
 {
+	setMethodSelector();
+
 	inputs[0].addEventListener("change", () =>
 	{
 		addModule();
@@ -119,6 +124,27 @@ function correctModules(insertedValue)
 	inputs[inputs.length - 1].value = "";
 }
 
+function setMethodSelector()
+{
+	let opt;
+	let optsNames = ["kronecker's method", "kronecker's Hausmann's method"];
+
+	for (let i = 0; i < 2; i++)
+	{
+		opt =  window.document.createElement("option");
+		opt.value = toString(i);
+		opt.innerText = optsNames[i];
+		methodSelector.appendChild(opt);
+	}
+
+	methodSelector.selectedIndex = 0;
+	methodSelector.addEventListener("change", ()=>
+	{
+		clearMethodLogs();
+		factorPolynomial();
+	});
+}
+
 function disp(txt)
 {
 	console.log(txt);
@@ -166,7 +192,6 @@ function f(x)
 	return y;
 }
 
-
 function getRoots()
 {
 	roots = [];
@@ -186,22 +211,32 @@ function getRoots()
 
 function factorPolynomial()
 {
+	pols = [];
 	let str = "";
 	let p = document.getElementById("factoredPolynomial");
 
 	let pol = getInputPolynomial();
-	document.getElementById("mainPolynomial").innerHTML = pol.toHTMLstring();
+	document.getElementById("mainPolynomial").innerHTML = pol.toHTMLStringBackward();
 
-	let kroneckersPolynomials = kroneckersMethod(pol);
-
-	for (let i = 0; i < kroneckersPolynomials.length; i++)
+	let polynomialFactors;
+	switch (methodSelector.selectedOptions[0].index)
 	{
-		if(kroneckersPolynomials.length > 1)
+		case 0:
+			polynomialFactors = kroneckersMethod(pol);
+			break;
+		case 1:
+			polynomialFactors = kroneckersHausmannsMethod(pol);
+			break;
+	}
+
+	for (let i = 0; i < polynomialFactors.length; i++)
+	{
+		if(polynomialFactors.length > 1)
 		{
 			str += "(";
 		}
-		str += kroneckersPolynomials[i].toHTMLstring();
-		if(kroneckersPolynomials.length > 1)
+		str += polynomialFactors[i].toHTMLStringBackward();
+		if(polynomialFactors.length > 1)
 		{
 			str += ")";
 		}
@@ -216,20 +251,26 @@ function findDivisors(number)
 
 	if(number == 0)
 	{
-		for (let i = -10; i <= 10; i++)
+		for (let i = -15; i <= 15; i++)
 		{
 			divisors.push(i);
 		}
-		return divisors
+		return divisors;
 	}
 
-	for (let i = -Math.abs(number); i <= Math.abs(number); i++)
+	for (let i = -Math.ceil(Math.sqrt(Math.abs(number))); i <= Math.ceil(Math.sqrt(Math.abs(number))); i++)
 	{
-		if (i != 0 && number % i === -0)
+		if (i !== 0 && number % i === 0)
 		{
 			divisors.push(i);
+			if(i !== Math.sqrt(Math.abs(number)) && i !== -Math.sqrt(Math.abs(number)))
+			{
+				divisors.push(number / i);
+			}
 		}
 	}
+
+	divisors.sort((a,b)=>a-b);
 
 	return divisors;
 }
@@ -246,10 +287,14 @@ function getInputPolynomial()
 	return polynomial;
 }
 
-function methodLog(text, endLine = true)
+function methodLog(text, startNewLine = false, endNewLine = true)
 {
+	if(startNewLine)
+	{
+		document.getElementById("methodsContent").innerHTML += "<br>";
+	}
 	document.getElementById("methodsContent").innerHTML += text.toString();
-	if(endLine)
+	if(endNewLine)
 	{
 		document.getElementById("methodsContent").innerHTML += "<br>";
 	}

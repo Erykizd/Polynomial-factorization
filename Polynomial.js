@@ -4,7 +4,7 @@ class Polynomial
 
     constructor(coefficients = [])
     {
-        this.coefficients = coefficients;
+        this.coefficients = JSON.parse(JSON.stringify(coefficients));
     }
 
     add(b)
@@ -96,6 +96,24 @@ class Polynomial
         return c;
     }
 
+    power(n)
+    {
+        let a = this;
+        let c = new Polynomial([1]);
+
+        if(typeof(n) !== 'number')
+        {
+            return a;
+        }
+
+        for (let i = 0; i < n; i++)
+        {
+            c = c.multiply(a);
+        }
+
+        return c;
+    }
+
     divide(b)
     {
         let a = this;
@@ -137,7 +155,7 @@ class Polynomial
 
         for (let i = 0; i < r.coefficients.length; i++)
         {
-            if(r.coefficients[i] != 0) //if the remainder has at least one not zero coefficient
+            if(r.coefficients[i] !== 0) //if the remainder has at least one not zero coefficient
             {
                 c.coefficients = []; //clear score because there was not zero remainder
             }
@@ -152,11 +170,79 @@ class Polynomial
         return c;
     }
 
-    toHTMLstring()
+    isEqual(pol)
+    {
+        return JSON.stringify(this) === JSON.stringify(pol);
+    }
+
+    isStable()
+    {
+        let sign = this.coefficients[0] / this.coefficients[0];
+        for (let i = 1; i < this.coefficients.length; i++)
+        {
+            if(this.coefficients[i] / this.coefficients[i] !== sign || this.coefficients[i] <= this.coefficients[i - 1]) //if different sign or a_i smaller than a_i-1
+            {
+                return false; //polynomial is not stable
+            }
+        }
+
+        return true;
+    }
+
+    getPolynomialMovedByVector(vec)
+    {
+        if(vec.length < 2)
+        {
+            return this;
+        }
+
+        let component;
+        let ret = new Polynomial([0]);
+
+        for (let i = 0; i < this.coefficients.length; i++)
+        {
+            component = new Polynomial([0,1]); // 0 + 1x
+            component = component.add(-vec[0]);
+            component = component.power(i); //(x-vx)^i
+            component = component.multiply(this.coefficients[i]) // * a_i
+
+            ret = ret.add(component);
+        }
+
+        ret = ret.add(vec[1]); // + vy
+
+        for (let i = 0; i < this.coefficients.length; i++)
+        {
+            ret.coefficients[i] = Math.round(ret.coefficients[i] * 1000000) / 1000000;
+        }
+
+        return ret;
+    }
+
+    toHTMLString()
     {
         let str = "";
 
         for (let i = 0; i < this.coefficients.length; i++)
+        {
+            if(this.coefficients[i] !== 0)
+            {
+                str += " + ";
+                str += this.coefficients[i];
+                str += "x<sup>" + i + "</sup>";
+            }
+        }
+
+        str = this.correctPolynomialString(str);
+
+        return str;
+    }
+
+    toHTMLStringBackward()
+    {
+        let str = "";
+
+        for (let i = this.coefficients.length - 1; i >= 0; i--)
         {
             if(this.coefficients[i] != 0)
             {
@@ -190,15 +276,39 @@ class Polynomial
         return str;
     }
 
+    toStringBackward()
+    {
+        let str = "";
+
+        for (let i = this.coefficients.length - 1; i >= 0; i--)
+        {
+            if(this.coefficients[i] != 0)
+            {
+                str += " + ";
+                str += this.coefficients[i];
+                str += "x^" + i;
+            }
+        }
+
+        str = this.correctPolynomialString(str);
+
+        return str;
+    }
+
     correctPolynomialString(str)
     {
-        str = str.replaceAll("x^1","x");
+        str = str.replaceAll("x^1 ","x ");
+        if(str.endsWith("x^1"))
+        {
+            str = str.replaceAll("x^1","x");
+        }
         str = str.replaceAll("x<sup>0</sup>","");
         str = str.replaceAll("x<sup>1</sup>","x");
         str = str.replaceAll("x^0","");
         str = str.replaceAll(" 1x"," x");
         str = str.replaceAll("--","+");
         str = str.replaceAll("+ -","- ");
+        str = str.replaceAll(" 1x"," x");
 
         if(str.startsWith(" + "))
         {
