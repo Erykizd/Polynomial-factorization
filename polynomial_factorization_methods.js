@@ -303,7 +303,8 @@ function kroneckersHausmannsMethod(pol)
             methodLog("", false, true);
 
             a = newtonInterpolationPolynomial(Math.round(degree/2),X,Y);
-            methodLog("a = " + a.toHTMLStringBackward());
+            methodLog("Wielomian a = " + a.toHTMLStringBackward());
+            methodLog("Wielomian a przesunięty z powrotem = " + a.getPolynomialMovedByVector([m,0]).toHTMLStringBackward());
 
             //divide main polynomial by found polynomial
             b = pol.divide(a);
@@ -327,7 +328,9 @@ function kroneckersHausmannsMethod(pol)
             }
             else if(b.getDegree() >= 0 && a.hasOnlyIntegerCoefficients() && b.hasOnlyIntegerCoefficients())
             {
-                methodLog("b = " + b.toHTMLStringBackward());
+                methodLog("Wielomian b = " + b.toHTMLStringBackward());
+                methodLog("Wielomian b przesunięte z powrotem = " + b.getPolynomialMovedByVector([m,0]).toHTMLStringBackward());
+
                 toFactorize = true;
                 break;
             }
@@ -450,11 +453,7 @@ function lagrangeInterpolationPolynomial(degree, X, Y)
     return result;
 }
 
-let X = [-5, -1, 0, 2];
-let Y = [-2, 6, 1, 3];
 
-let table = generateNewtonsTable(X, Y);
-let coefficients = getCoefficients(table);
 
 function newtonInterpolationPolynomial(degree, X, Y)
 {
@@ -493,6 +492,8 @@ function newtonInterpolationPolynomial(degree, X, Y)
     return result;
 }
 
+
+
 function generateNewtonsTable(X, Y)
 {
     let nrOfSteps = X.length - 1;
@@ -503,6 +504,8 @@ function generateNewtonsTable(X, Y)
     addCol(table, X, Y, step, nrOfSteps);
     return table;
 }
+
+
 
 function addCol(table, X, Y, step, nrOfSteps)
 {
@@ -519,6 +522,8 @@ function addCol(table, X, Y, step, nrOfSteps)
     }
 }
 
+
+
 function getCoefficients(table)
 {
     let coefficients = [];
@@ -528,6 +533,8 @@ function getCoefficients(table)
     }
     return coefficients;
 }
+
+
 
 function isIncreasingSequence(seq)
 {
@@ -540,6 +547,8 @@ function isIncreasingSequence(seq)
     }
     return true;
 }
+
+
 
 function getBestPoints(nrOfPoints, pol)
 {
@@ -576,6 +585,8 @@ function getBestPoints(nrOfPoints, pol)
     return [X,Y];
 }
 
+
+
 function getPoints(nrOfPoints, pol)
 {
     let X = [];
@@ -594,6 +605,8 @@ function getPoints(nrOfPoints, pol)
 
     return [X,Y];
 }
+
+
 
 function isMemberOfPolynomials(pol)
 {
