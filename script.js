@@ -227,6 +227,8 @@ function factorPolynomial()
 		case 1:
 			polynomialFactors = kroneckersHausmannsMethod(pol);
 			break;
+		default:
+			polynomialFactors = kroneckersMethod(pol);
 	}
 
 	for (let i = 0; i < polynomialFactors.length; i++)
@@ -303,4 +305,9 @@ function methodLog(text, startNewLine = false, endNewLine = true)
 function clearMethodLogs()
 {
 	document.getElementById("methodsContent").innerHTML = "";
+}
+
+function arrayToString(arr)
+{
+	return JSON.stringify(arr).replaceAll(",",";").replaceAll("[","{").replaceAll("]","}");
 }

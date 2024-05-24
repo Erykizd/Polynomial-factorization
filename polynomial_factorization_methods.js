@@ -22,6 +22,7 @@ function kroneckersMethod(pol)
         //find divisors
         let matrixOfDivisors = new Array(new Array(0));
         let divisors = [];
+        let divisorsStr = "";
         let xValue = 0;
         let yValue = 0;
         let rootFound = false;
@@ -50,15 +51,9 @@ function kroneckersMethod(pol)
 
             divisors = findDivisors(pol.f(xValue));
             matrixOfDivisors.push(divisors);
-            methodLog("Dzielniki dla f(" + xValue + ") = " + yValue, false, true);
-            methodLog("{");
-            methodLog("   ", false,false);
-            for (let j = 0; j < divisors.length; j++)
-            {
-                methodLog(divisors[j] + "; ", false, false);
-            }
-            methodLog("", false, true);
-            methodLog("}", );
+            divisorsStr = JSON.stringify(divisors).replaceAll(",",";");
+            methodLog("Dzielniki dla f(" + xValue + ") = " + yValue, true, true);
+            methodLog(divisorsStr, false, true);
         }
 
         if(!rootFound) //if there were no roots till now
@@ -82,7 +77,7 @@ function kroneckersMethod(pol)
                     Y[i] = matrixOfDivisors[i][customNr.getNr()[i]]; //setting y values according to custom nr
                 }
 
-                methodLog("X = ", false, false);
+                methodLog("X = ", true, false);
                 for (let i = 0; i < X.length; i++)
                 {
                     methodLog(X[i] + "; ", false, false);
@@ -159,6 +154,7 @@ function kroneckersMethod(pol)
         let L = kroneckersMethod(a);
         let P = kroneckersMethod(b);
 
+        //return sequence of polynomials
         if(!((a.getDegree() > 1 || b.getDegree() > 1) && L[0] !== a && P[0] !== b)) //if recursion needed
         {
             for (let i = 0; i < L.length; i++)
@@ -217,60 +213,62 @@ function kroneckersHausmannsMethod(pol)
     {
         m = getM(pol);
         methodLog("Wielomian " + pol.toHTMLStringBackward() + " nie jest stabilny", false, true);
+        methodLog("Wyznaczamy m = " + m, false, true);
 
-        pol = pol.getPolynomialMovedByVector([-m,0]);
+        pol = pol.getPolynomialMovedByVector([m+1,0]);
         isMoved = true;
-        methodLog("Wielomian przesunięty o " + m + " w lewo aby był stabilny: " + pol.toHTMLStringBackward(), false, true);
+        methodLog("Wielomian przesunięty o (m+1) = " + (m+1) + " w lewo aby był stabilny: " + pol.toHTMLStringBackward(), false, true);
     }
 
     //find divisors
     let matrixOfDivisors = [];
     let divisors = [];
+    let divisorsStr = "";
     let xValue = 0;
     let yValue = 0;
     let rootFound = false;
     let X = new Array(0);
+    let Y = new Array(0);
 
     let nrOfPoints = Math.ceil(degree/2) + 1;
-    let bestPoints = getBestPoints(nrOfPoints, pol);
+    let points = getPoints(nrOfPoints, pol);
 
     for (let i = 0; i < nrOfPoints; i++)
     {
-        xValue = bestPoints[0][i];
+        xValue = points[0][i];
         X.push(xValue);
-        yValue = bestPoints[1][i];
+        yValue = points[1][i];
+        Y.push(yValue);
 
         if(yValue === 0) //if root found
         {
             a = new Polynomial([-1*xValue, 1]);
             b = pol.divide(a);
+
             rootFound = true;
             methodLog("Znaleziono pierwiastek f(" + xValue + ") = " + yValue);
             methodLog("Wielomian a = " + a.toHTMLStringBackward());
             methodLog("Wielomian b = " + b.toHTMLStringBackward());
 
-            methodLog("Wielomian a przesunięty z powrotem = " + a.getPolynomialMovedByVector([m,0]).toHTMLStringBackward());
-            methodLog("Wielomian b przesunięte z powrotem = " + b.getPolynomialMovedByVector([m,0]).toHTMLStringBackward());
+            if(isMoved)
+            {
+                methodLog("Wielomian a przesunięty z powrotem = " + a.getPolynomialMovedByVector([-(m+1),0]).toHTMLStringBackward());
+                methodLog("Wielomian b przesunięte z powrotem = " + b.getPolynomialMovedByVector([-(m+1),0]).toHTMLStringBackward());
+            }
             break;
         }
 
         divisors = findDivisors(pol.f(xValue));
         matrixOfDivisors.push(divisors);
-        methodLog("Dzielniki dla f(" + xValue + ") = " + yValue, false, true);
-        methodLog("{");
-        methodLog("   ", false,false);
-        for (let j = 0; j < divisors.length; j++)
-        {
-            methodLog(divisors[j] + "; ", false, false);
-        }
-        methodLog("", false, true);
-        methodLog("}", );
+        divisorsStr = JSON.stringify(divisors).replaceAll(",",";");
+        methodLog("Dzielniki dla f(" + xValue + ") = " + yValue, true, true);
+        methodLog(divisorsStr, false, true);
     }
 
     if(!rootFound) //if there were no roots till now
     {
         //find polynomial by points
-        let Y = new Array(X.length);
+        let interY = new Array(X.length);
 
         // getting lengths in matrixOfDivisors
         let Ls = [];
@@ -285,7 +283,7 @@ function kroneckersHausmannsMethod(pol)
         {
             for (let i = 0; i < X.length; i++)
             {
-                Y[i] = matrixOfDivisors[i][customNr.getNr()[i]]; //setting y values according to custom nr
+                interY[i] = matrixOfDivisors[i][customNr.getNr()[i]]; //setting y values according to custom nr
             }
 
             methodLog("X = ", false, false);
@@ -298,13 +296,24 @@ function kroneckersHausmannsMethod(pol)
             methodLog("Y = ", false, false);
             for (let i = 0; i < X.length; i++)
             {
-                methodLog(Y[i] + "; ", false, false);
+                methodLog(interY[i] + "; ", false, false);
             }
             methodLog("", false, true);
 
+            if(areTheseDivisorsToSkip(Y,interY))
+            {
+                methodLog("Zestaw dzielników do pominięcia");
+                customNr = customNr.add(customOne);
+                continue;
+            }
+
             a = newtonInterpolationPolynomial(Math.round(degree/2),X,Y);
             methodLog("Wielomian a = " + a.toHTMLStringBackward());
-            methodLog("Wielomian a przesunięty z powrotem = " + a.getPolynomialMovedByVector([m,0]).toHTMLStringBackward());
+
+            if(isMoved)
+            {
+                methodLog("Wielomian a przesunięty z powrotem = " + a.getPolynomialMovedByVector([-(m+1),0]).toHTMLStringBackward());
+            }
 
             //divide main polynomial by found polynomial
             b = pol.divide(a);
@@ -329,7 +338,10 @@ function kroneckersHausmannsMethod(pol)
             else if(b.getDegree() >= 0 && a.hasOnlyIntegerCoefficients() && b.hasOnlyIntegerCoefficients())
             {
                 methodLog("Wielomian b = " + b.toHTMLStringBackward());
-                methodLog("Wielomian b przesunięte z powrotem = " + b.getPolynomialMovedByVector([m,0]).toHTMLStringBackward());
+                if(isMoved)
+                {
+                    methodLog("Wielomian b przesunięty z powrotem = " + b.getPolynomialMovedByVector([-(m+1),0]).toHTMLStringBackward());
+                }
 
                 toFactorize = true;
                 break;
@@ -347,7 +359,7 @@ function kroneckersHausmannsMethod(pol)
         {
             if(isMoved)
             {
-                pol = pol.getPolynomialMovedByVector([m,0]);
+                pol = pol.getPolynomialMovedByVector([-(m+1),0]);
             }
             return [pol];
         }
@@ -362,7 +374,7 @@ function kroneckersHausmannsMethod(pol)
         {
             if(isMoved)
             {
-                pol = pol.getPolynomialMovedByVector([m,0]);
+                pol = pol.getPolynomialMovedByVector([-(m+1),0]);
             }
             return [pol];
         }
@@ -370,8 +382,8 @@ function kroneckersHausmannsMethod(pol)
         {
             if(isMoved)
             {
-                a = a.getPolynomialMovedByVector([m,0]);
-                b = b.getPolynomialMovedByVector([m,0]);
+                a = a.getPolynomialMovedByVector([-(m+1),0]);
+                b = b.getPolynomialMovedByVector([-(m+1),0]);
             }
             return [a,b];
         }
@@ -394,7 +406,120 @@ function kroneckersHausmannsMethod(pol)
     }
 }
 
+function getSequencesOfDivisors(a,b)
+{
+    let c = [];
+    for (let i = 0; i < b.length; i++)
+    {
+        c[i] = a[i]/b[i];
+    }
 
+    return [b,c];
+}
+
+function areTheseDivisorsToSkip(a,b)
+{
+    //a_i=b_i*c_i
+    let c = getSequencesOfDivisors(a,b)[1];
+
+    let bIncreasing = isIncreasingSequence(b);
+    let cIncreasing = isIncreasingSequence(c);
+
+    methodLog("Wartości a = " + JSON.stringify(a), true, false);
+    methodLog("Dzielniki b = " + JSON.stringify(b), true, false);
+    methodLog("Dzielniki c = " + JSON.stringify(c), true, true);
+
+    if( !bIncreasing )
+    {
+        methodLog("Widać, że wartości b nie rosną b = " + JSON.stringify(b), true, true);
+        return false;
+    }
+
+    if( !cIncreasing )
+    {
+        methodLog("Widać, że wartości c nie rosną c = " + JSON.stringify(c), true, true);
+        return false;
+    }
+
+    let deg1;
+    let deg2;
+
+    let bDifferenceTable = getDifferenceTable(b);
+    let cDifferenceTable = getDifferenceTable(c);
+
+    methodLog("Tablica różnicowa dla b: ",true, true);
+    for (let i = 0; i < bDifferenceTable.length; i++)
+    {
+        methodLog(JSON.stringify(bDifferenceTable[i]).replaceAll(",",";"),false, true);
+    }
+
+    methodLog("Tablica różnicowa dla c: ",true, true);
+    for (let i = 0; i < cDifferenceTable.length; i++)
+    {
+        methodLog(JSON.stringify(cDifferenceTable[i]).replaceAll(",",";"),false, true);
+    }
+
+    let theSameNrsInB = true;
+    let newB = JSON.parse(JSON.stringify(b));
+
+    for (let i = 0; i < b.length; i++)
+    {
+        newB = diff(newB);
+        theSameNrsInB = true;
+        for (let j = 1; j < newB.length; j++)
+        {
+            deg1 = i+1;
+            if(newB[i] !== newB[i-1])
+            {
+                theSameNrsInB = false;
+            }
+        }
+
+        if(theSameNrsInB)
+        {
+            break;
+        }
+    }
+
+    let theSameNrsInC = true;
+    let newC = JSON.parse(JSON.stringify(c));
+
+    for (let i = 0; i < a.length - 1 - deg1; i++) //degree of main polynomial subtract degree of first component
+    {
+        newC = diff(newC);
+        theSameNrsInC = true;
+        for (let j = 1; j < newC.length; j++)
+        {
+            deg2 = i+1;
+            if(newC[i] !== newC[i-1])
+            {
+                theSameNrsInC = false;
+            }
+        }
+
+        if(theSameNrsInC)
+        {
+            break;
+        }
+    }
+
+    if(!theSameNrsInB || !theSameNrsInC)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+function diff(array)
+{
+    let result = [];
+    for (let i = 1; i < array.length; i++)
+    {
+        result.push(array[i] - array[i - 1]);
+    }
+    return result;
+}
 
 function getM(pol)
 {
@@ -414,6 +539,8 @@ function getM(pol)
 
     return m;
 }
+
+
 
 function lagrangeInterpolationPolynomial(degree, X, Y)
 {
@@ -548,6 +675,25 @@ function isIncreasingSequence(seq)
     return true;
 }
 
+function getDifferenceTable(seq)
+{
+    let componentsTable = [];
+    componentsTable.push(seq);
+
+    for (let i = 1; i < seq.length; i++)
+    {
+        componentsTable.push(diff(componentsTable[i-1]));
+        for (let j = 1; j < componentsTable[i].length; j++)
+        {
+            if(componentsTable[i][j] == componentsTable[i][0])
+            {
+                return componentsTable;
+            }
+        }
+    }
+
+    return componentsTable;
+}
 
 
 function getBestPoints(nrOfPoints, pol)
@@ -605,7 +751,6 @@ function getPoints(nrOfPoints, pol)
 
     return [X,Y];
 }
-
 
 
 function isMemberOfPolynomials(pol)
