@@ -2,74 +2,49 @@ let inputs = window.document.getElementsByClassName("coefficient");
 let modules = window.document.getElementsByClassName("module");
 let methodSelector = window.document.getElementById("methodSelector");
 let pols = [];
+let inputPolynomial;
+let chartController;
+let basicColors = ["red", "green", "blue", "yellow", "cyan", "magenta", "orange", "purple", "pink", "brown", "black", "white", "gray", "lime", "maroon", "navy", "olive", "teal", "aqua", "fuchsia", "silver", "gold"];
 
-var options =
-	{
-		responsive: true,
-		maintainAspectRatio: false,
-		scales: {
-			x: {
-				display: true, // Show OX
-				title:
-					{
-						display: true,
-						text: 'x' // Tiltle of OX
-					}
-			},
-			y: {
-				display: true, // Show OY
-				title:
-					{
-						display: true,
-						text: 'y' // Title of OY
-					}
-			}
-		}
-	};
-
-var data =
-	{
-		labels: [],
-		datasets:
-			[{
-				label: "Wykres podanego wielomianu",
-				data: [],
-				borderColor: "lime",
-				borderWidth: 2,
-				fill: false
-			}]
-	};
-var ctx = document.getElementById("chart").getContext("2d");
-var chart = new Chart(ctx,
-	{
-		type: 'line',
-		data: data,
-		options: options
-	});
 
 setup();
 
 function setup()
 {
+	inputPolynomial = getInputPolynomial();
+
+	chartController = new ChartController("chart");
+
 	setMethodSelector();
 
 	inputs[0].addEventListener("change", () =>
 	{
 		addModule();
-		inputChanged();
+		inputChanged(document.getElementById("autoFactorize").checked);
+	});
+
+	document.getElementById("factorizeButton").addEventListener("click", () =>
+	{
+		inputChanged(true);
 	});
 }
 
-function inputChanged()
+
+function inputChanged(doIt = true)
 {
-	let X;
-	let Y;
-	let roots = [];
-	[X,Y] = getDataToDraw(-5,5,0.1);
-	clearMethodLogs();
-	factorPolynomial();
-	plot(X,Y);
+	if(doIt)
+	{
+		inputPolynomial = getInputPolynomial();
+		let X;
+		let Y;
+		let roots = [];
+		[X,Y] = getDataToDraw(-5,5,0.1);
+		clearMethodLogs();
+		factorPolynomial();
+		chartController.plot(X,Y,0,inputPolynomial.toStringBackward(),"lime",2);
+	}
 }
+
 
 function addModule()
 {
@@ -78,7 +53,7 @@ function addModule()
 
 	newInput.addEventListener("change", () =>
 	{
-		inputChanged();
+		inputChanged(document.getElementById("autoFactorize").checked);
 	});
 
 	let insertedValue = Number(inputs[inputs.length - 1].value); //remember inserted value before adding new module
@@ -92,42 +67,42 @@ function addModule()
 function correctModules(insertedValue)
 {
 	let powers = document.getElementsByClassName("power");
+	let signs = document.getElementsByClassName("sign");
 
 	for(let i = 0; i < powers.length; i++)
 	{
-		if(i == 0)
+		if(i > 0)
 		{
-			powers[i].innerHTML = " + ";
+			signs[i].innerHTML = " + ";
 		}
-		else if(i == 1)
+
+		if(i === 0)
 		{
-			if(i == powers.length - 1)
-			{
-				powers[i].innerHTML = "x ";
-			}
-			else
-			{
-				powers[i].innerHTML = "x + ";
-			}
+			powers[i].innerHTML = " ";
 		}
-		else if(i == powers.length - 1)
+		else if(i === 1)
+		{
+			powers[i].innerHTML = "x ";
+		}
+		else if(powers.length === i + 1)
 		{
 			powers[i].innerHTML = "x<sup>" + i + "</sup> ";
 		}
 		else
 		{
-			powers[i].innerHTML = "x<sup>" + i + "</sup> + ";
+			powers[i].innerHTML = "x<sup>" + i + "</sup> ";
 		}
 	}
 
 	inputs[inputs.length - 2].value = insertedValue;
 	inputs[inputs.length - 1].value = "";
+	inputs[inputs.length - 1].parentElement.id = "lastModule";
 }
 
 function setMethodSelector()
 {
 	let opt;
-	let optsNames = ["kronecker's method", "kronecker's Hausmann's method"];
+	let optsNames = ["Kronecker's method", "Kronecker's Hausmann's method"];
 
 	for (let i = 0; i < 2; i++)
 	{
@@ -150,14 +125,7 @@ function disp(txt)
 	console.log(txt);
 }
 
-function plot(X,Y)
-{
-	chart.data.labels = X;
-	chart.data.datasets[0].data = Y;
-	chart.update();
-}
-
-function getDataToDraw(x_min,x_max,dx)
+function getDataToDraw(x_min,x_max,dx,pol = inputPolynomial)
 {
 	let X = [];
 	let Y = [];
@@ -170,7 +138,7 @@ function getDataToDraw(x_min,x_max,dx)
 	{
 		x = x_min + i * dx;
 		X.push(Math.round(1000000*x)/1000000);
-		y = f(x);
+		y = pol.f(x);
 		Y.push(y);
 		y = 0;
 	}
@@ -178,19 +146,6 @@ function getDataToDraw(x_min,x_max,dx)
 	return [X,Y];
 }
 
-function f(x)
-{
-	let a = 0;
-	let y = 0;
-
-	for(let j = 0; j < inputs.length; j++)
-	{
-		a = Number(inputs[j].value);
-		y = y + a*(Math.pow(x, j));
-	}
-
-	return y;
-}
 
 function getRoots()
 {
@@ -200,7 +155,7 @@ function getRoots()
 
 	for (let i = min; i <= max; i++)
 	{
-		if(f(i) === 0)
+		if(inputPolynomial.f(i) === 0)
 		{
 			roots.push(i);
 		}
@@ -211,25 +166,35 @@ function getRoots()
 
 function factorPolynomial()
 {
+	console.clear();
+
 	pols = [];
 	let str = "";
 	let p = document.getElementById("factoredPolynomial");
 
-	let pol = getInputPolynomial();
-	document.getElementById("mainPolynomial").innerHTML = pol.toHTMLStringBackward();
+	inputPolynomial = getInputPolynomial();
+	document.getElementById("mainPolynomial").innerHTML = inputPolynomial.toHTMLStringBackward();
 
 	let polynomialFactors;
 	switch (methodSelector.selectedOptions[0].index)
 	{
 		case 0:
-			polynomialFactors = kroneckersMethod(pol);
+			polynomialFactors = kroneckersMethod(inputPolynomial);
 			break;
 		case 1:
-			polynomialFactors = kroneckersHausmannsMethod(pol);
+			polynomialFactors = kroneckersHausmannsMethod(inputPolynomial);
 			break;
 		default:
-			polynomialFactors = kroneckersMethod(pol);
+			polynomialFactors = kroneckersMethod(inputPolynomial);
 	}
+
+	let X = [];
+	let Y = [];
+	let name = "";
+
+
+	chartController.clear();
+	chartController.plot(X,Y,0,inputPolynomial.toStringBackward(),"lime",2);
 
 	for (let i = 0; i < polynomialFactors.length; i++)
 	{
@@ -242,6 +207,10 @@ function factorPolynomial()
 		{
 			str += ")";
 		}
+
+		[X,Y] = getDataToDraw(-5,5,0.1,polynomialFactors[i]);
+		name = polynomialFactors[i].toStringBackward();
+		chartController.plot(X,Y,i+1,name,basicColors[i % basicColors.length],2);
 	}
 
 	p.innerHTML = str;
@@ -251,7 +220,7 @@ function findDivisors(number)
 {
 	let divisors = [];
 
-	if(number == 0)
+	if(number === 0)
 	{
 		for (let i = -15; i <= 15; i++)
 		{

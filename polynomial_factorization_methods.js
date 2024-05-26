@@ -207,15 +207,15 @@ function kroneckersHausmannsMethod(pol)
 
     if(pol.isStable())
     {
-        methodLog("Wielomian " + pol.toHTMLStringBackward() + " jest stabilny", false, true);
+        methodLog("Wielomian " + pol.toHTMLStringBackward() + " jest stabilny ", false, true);
     }
     else
     {
         m = getM(pol);
-        methodLog("Wielomian " + pol.toHTMLStringBackward() + " nie jest stabilny", false, true);
+        methodLog("Wielomian " + pol.toHTMLStringBackward() + " nie jest stabilny ", false, true);
         methodLog("Wyznaczamy m = " + m, false, true);
 
-        pol = pol.getPolynomialMovedByVector([m+1,0]);
+        pol = pol.getPolynomialMovedByVector([-(m+1),0]);
         isMoved = true;
         methodLog("Wielomian przesunięty o (m+1) = " + (m+1) + " w lewo aby był stabilny: " + pol.toHTMLStringBackward(), false, true);
     }
@@ -231,7 +231,7 @@ function kroneckersHausmannsMethod(pol)
     let Y = new Array(0);
 
     let nrOfPoints = Math.ceil(degree/2) + 1;
-    let points = getPoints(nrOfPoints, pol);
+    let points = getBestPoints(nrOfPoints, pol);
 
     for (let i = 0; i < nrOfPoints; i++)
     {
@@ -252,9 +252,10 @@ function kroneckersHausmannsMethod(pol)
 
             if(isMoved)
             {
-                methodLog("Wielomian a przesunięty z powrotem = " + a.getPolynomialMovedByVector([-(m+1),0]).toHTMLStringBackward());
-                methodLog("Wielomian b przesunięte z powrotem = " + b.getPolynomialMovedByVector([-(m+1),0]).toHTMLStringBackward());
+                methodLog("Wielomian a przesunięty z powrotem = " + a.getPolynomialMovedByVector([(m+1),0]).toHTMLStringBackward());
+                methodLog("Wielomian b przesunięte z powrotem = " + b.getPolynomialMovedByVector([(m+1),0]).toHTMLStringBackward());
             }
+            console.log("tutaj");
             break;
         }
 
@@ -312,7 +313,7 @@ function kroneckersHausmannsMethod(pol)
 
             if(isMoved)
             {
-                methodLog("Wielomian a przesunięty z powrotem = " + a.getPolynomialMovedByVector([-(m+1),0]).toHTMLStringBackward());
+                methodLog("Wielomian a przesunięty z powrotem = " + a.getPolynomialMovedByVector([(m+1),0]).toHTMLStringBackward());
             }
 
             //divide main polynomial by found polynomial
@@ -340,7 +341,7 @@ function kroneckersHausmannsMethod(pol)
                 methodLog("Wielomian b = " + b.toHTMLStringBackward());
                 if(isMoved)
                 {
-                    methodLog("Wielomian b przesunięty z powrotem = " + b.getPolynomialMovedByVector([-(m+1),0]).toHTMLStringBackward());
+                    methodLog("Wielomian b przesunięty z powrotem = " + b.getPolynomialMovedByVector([(m+1),0]).toHTMLStringBackward());
                 }
 
                 toFactorize = true;
@@ -359,7 +360,7 @@ function kroneckersHausmannsMethod(pol)
         {
             if(isMoved)
             {
-                pol = pol.getPolynomialMovedByVector([-(m+1),0]);
+                pol = pol.getPolynomialMovedByVector([(m+1),0]);
             }
             return [pol];
         }
@@ -374,7 +375,7 @@ function kroneckersHausmannsMethod(pol)
         {
             if(isMoved)
             {
-                pol = pol.getPolynomialMovedByVector([-(m+1),0]);
+                pol = pol.getPolynomialMovedByVector([(m+1),0]);
             }
             return [pol];
         }
@@ -382,8 +383,8 @@ function kroneckersHausmannsMethod(pol)
         {
             if(isMoved)
             {
-                a = a.getPolynomialMovedByVector([-(m+1),0]);
-                b = b.getPolynomialMovedByVector([-(m+1),0]);
+                a = a.getPolynomialMovedByVector([(m+1),0]);
+                b = b.getPolynomialMovedByVector([(m+1),0]);
             }
             return [a,b];
         }
@@ -459,56 +460,13 @@ function areTheseDivisorsToSkip(a,b)
         methodLog(JSON.stringify(cDifferenceTable[i]).replaceAll(",",";"),false, true);
     }
 
-    let theSameNrsInB = true;
-    let newB = JSON.parse(JSON.stringify(b));
+    let newB = bDifferenceTable[bDifferenceTable.length - 1];
+    let theSameNrsInB = areAllElementsEqual(newB);
 
-    for (let i = 0; i < b.length; i++)
-    {
-        newB = diff(newB);
-        theSameNrsInB = true;
-        for (let j = 1; j < newB.length; j++)
-        {
-            deg1 = i+1;
-            if(newB[i] !== newB[i-1])
-            {
-                theSameNrsInB = false;
-            }
-        }
+    let newC = bDifferenceTable[bDifferenceTable.length - 1];
+    let theSameNrsInC = areAllElementsEqual(newC);
 
-        if(theSameNrsInB)
-        {
-            break;
-        }
-    }
-
-    let theSameNrsInC = true;
-    let newC = JSON.parse(JSON.stringify(c));
-
-    for (let i = 0; i < a.length - 1 - deg1; i++) //degree of main polynomial subtract degree of first component
-    {
-        newC = diff(newC);
-        theSameNrsInC = true;
-        for (let j = 1; j < newC.length; j++)
-        {
-            deg2 = i+1;
-            if(newC[i] !== newC[i-1])
-            {
-                theSameNrsInC = false;
-            }
-        }
-
-        if(theSameNrsInC)
-        {
-            break;
-        }
-    }
-
-    if(!theSameNrsInB || !theSameNrsInC)
-    {
-        return false;
-    }
-
-    return true;
+    return !(theSameNrsInB && theSameNrsInC); //if not constant sequences return skip = true
 }
 
 function diff(array)
@@ -695,6 +653,18 @@ function getDifferenceTable(seq)
     return componentsTable;
 }
 
+function areAllElementsEqual(array)
+{
+    for (const element in array)
+    {
+        if(element !== array[0])
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
 
 function getBestPoints(nrOfPoints, pol)
 {
@@ -708,7 +678,7 @@ function getBestPoints(nrOfPoints, pol)
     {
         x = i;
         y = pol.f(x);
-        if(y == 0)
+        if(y === 0)
         {
             nrOfDivisors = 0;
         }

@@ -1,6 +1,7 @@
 *
 {
 	color: lime;
+	text-align: center;
 }
 
 body
@@ -20,7 +21,7 @@ input[type=submit]
     margin-right: 10px;
 }
 
-.power
+.power, .sign
 {
 	display: inline-block;
 	font-size: 26px;
@@ -56,6 +57,26 @@ input[type=number]::-webkit-inner-spin-button
 	height: 100%;
 }
 
+button
+{
+	background: radial-gradient(black 50%, lime 70%, black 85%);
+	height: 50px;
+	border-radius: 25px;
+}
+
+button:hover
+{
+	background: radial-gradient(black 55%, lime 75%, black 90%);
+	height: 50px;
+	cursor: pointer;
+}
+
+button:active
+{
+	background: radial-gradient(black 60%, lime 80%, black 95%);
+	height: 50px;
+}
+
 p
 {
 	font-size: 28px;
@@ -64,6 +85,33 @@ p
 select
 {
 	background-color: #000000;
+	width: 80%;
 	font-size: 22px;
-	border: 3px solid green;
+	border: 3px solid lime;
+	border-radius: 25px;
+	cursor: pointer;
+}
+
+input[type="checkbox"]
+{
+	height: 30px;
+	width: 30px;
+	background-color: lime;
+	cursor: pointer;
+}
+
+input
+{
+	border-radius: 25px;
+}
+
+#lastModule
+{
+	opacity: 0.4;
+}
+
+#factorizeControl:has(input:checked)>button
+{
+	display: none;
+	cursor: default;
 }
