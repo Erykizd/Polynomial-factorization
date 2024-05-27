@@ -175,19 +175,6 @@ class Polynomial
         return JSON.stringify(this) === JSON.stringify(pol);
     }
 
-    isStable()
-    {
-        let sign = this.coefficients[0] / this.coefficients[0];
-        for (let i = 1; i < this.coefficients.length; i++)
-        {
-            if(this.coefficients[i] / this.coefficients[i] !== sign || this.coefficients[i] <= this.coefficients[i - 1]) //if different sign or a_i smaller than a_i-1
-            {
-                return false; //polynomial is not stable
-            }
-        }
-
-        return true;
-    }
 
     getPolynomialMovedByVector(vec)
     {

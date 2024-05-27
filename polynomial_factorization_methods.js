@@ -51,7 +51,7 @@ function kroneckersMethod(pol)
 
             divisors = findDivisors(pol.f(xValue));
             matrixOfDivisors.push(divisors);
-            divisorsStr = JSON.stringify(divisors).replaceAll(",",";");
+            divisorsStr = arrayToString(divisors);
             methodLog("Dzielniki dla f(" + xValue + ") = " + yValue, true, true);
             methodLog(divisorsStr, false, true);
         }
@@ -176,7 +176,6 @@ function kroneckersMethod(pol)
 }
 
 
-
 function kroneckersHausmannsMethod(pol)
 {
     if(isMemberOfPolynomials(pol) || (pol.getDegree() === 1 && pol.coefficients[1] === 1))
@@ -198,14 +197,13 @@ function kroneckersHausmannsMethod(pol)
 
     if(pol.getDegree() <= 0)
     {
-        ret = [pol];
-        return ret;
+        return [pol];
     }
 
     methodLog("Wielomian do sfaktoryzowania: ");
     methodLog(pol.toHTMLStringBackward());
 
-    if(pol.isStable())
+    if(isStableByHurwitz(pol))
     {
         methodLog("Wielomian " + pol.toHTMLStringBackward() + " jest stabilny ", false, true);
     }
@@ -252,10 +250,11 @@ function kroneckersHausmannsMethod(pol)
 
             if(isMoved)
             {
-                methodLog("Wielomian a przesunięty z powrotem = " + a.getPolynomialMovedByVector([(m+1),0]).toHTMLStringBackward());
-                methodLog("Wielomian b przesunięte z powrotem = " + b.getPolynomialMovedByVector([(m+1),0]).toHTMLStringBackward());
+                a = a.getPolynomialMovedByVector([(m+1),0])
+                b = b.getPolynomialMovedByVector([(m+1),0])
+                methodLog("Wielomian a przesunięty z powrotem = " + a.toHTMLStringBackward());
+                methodLog("Wielomian b przesunięte z powrotem = " + b.toHTMLStringBackward());
             }
-            console.log("tutaj");
             break;
         }
 
@@ -263,7 +262,7 @@ function kroneckersHausmannsMethod(pol)
         matrixOfDivisors.push(divisors);
         divisorsStr = JSON.stringify(divisors).replaceAll(",",";");
         methodLog("Dzielniki dla f(" + xValue + ") = " + yValue, true, true);
-        methodLog(divisorsStr, false, true);
+        methodLog(arrayToString(divisorsStr), false, true);
     }
 
     if(!rootFound) //if there were no roots till now
@@ -360,7 +359,7 @@ function kroneckersHausmannsMethod(pol)
         {
             if(isMoved)
             {
-                pol = pol.getPolynomialMovedByVector([(m+1),0]);
+                return [pol.getPolynomialMovedByVector([(m+1),0])];
             }
             return [pol];
         }
@@ -375,7 +374,7 @@ function kroneckersHausmannsMethod(pol)
         {
             if(isMoved)
             {
-                pol = pol.getPolynomialMovedByVector([(m+1),0]);
+                return [pol.getPolynomialMovedByVector([(m+1),0])];
             }
             return [pol];
         }
@@ -383,8 +382,8 @@ function kroneckersHausmannsMethod(pol)
         {
             if(isMoved)
             {
-                a = a.getPolynomialMovedByVector([(m+1),0]);
-                b = b.getPolynomialMovedByVector([(m+1),0]);
+                return [a.getPolynomialMovedByVector([(m+1),0]),
+                    b.getPolynomialMovedByVector([(m+1),0])];
             }
             return [a,b];
         }
@@ -394,7 +393,7 @@ function kroneckersHausmannsMethod(pol)
     let L = kroneckersHausmannsMethod(a);
     let P = kroneckersHausmannsMethod(b);
 
-    if(!((a.getDegree() > 1 || b.getDegree() > 1) && L[0] !== a && P[0] !== b)) //if recursion needed
+    if(!((a.getDegree() > 1 || b.getDegree() > 1) && L[0] !== a && P[0] !== b)) //if recursion finished
     {
         for (let i = 0; i < L.length; i++)
         {
@@ -405,6 +404,12 @@ function kroneckersHausmannsMethod(pol)
             ret.push(P[i]);
         }
     }
+    else
+    {
+        ret = [pol];
+    }
+
+    return ret;
 }
 
 function getSequencesOfDivisors(a,b)
@@ -734,4 +739,66 @@ function isMemberOfPolynomials(pol)
     }
 
     return false;
+}
+
+function getMatrixOfCoefficients(a, n = a.length)
+{
+    let matHelp = [];
+    let row = [];
+
+    for (let i = 0; i < n; i++)
+    {
+        row = [];
+        for (let j = 0; j < n; j++)
+        {
+            if(2*(i+1)-(j+1) < 0 || 2*(i+1)-(j+1) + 1 > a.length)
+            {
+                row.push(0);
+            }
+            else
+            {
+                row.push(a[2*(i+1)-(j+1)]);
+            }
+        }
+        matHelp.push(row);
+    }
+
+    return new Matrix(matHelp);
+}
+
+function isStableByHurwitz(pol)
+{
+    let sign = pol.coefficients[0] / pol.coefficients[0];
+
+    for (let i = 1; i < pol.coefficients.length; i++)
+    {
+        if(pol.coefficients[i] / pol.coefficients[i] !== sign) //if different sign or a_i smaller than a_i-1
+        {
+            methodLog("Współczynniki o różnych znakach: ", true, true);
+            methodLog(arrayToString(pol.coefficients), false, true);
+            return false; //polynomial is not stable because not all signs are the same
+        }
+    }
+
+    let det;
+    for (let i = 1; i < pol.coefficients.length; i++)
+    {
+        det = getMatrixOfCoefficients(pol.coefficients,i).det();
+        methodLog("W" + i + " = " + det, true, false);
+        methodLog((det > 0 ? " > " : det < 0 ? " < " : " = ") + "0", false, true);
+
+        if(det < 0) //if different sign or a_i smaller than a_i-1
+        {
+            methodLog("Wyznacznik ujemny", true, false);
+            return false; //polynomial is not stable by Hurwitz
+        }
+
+        if(det === 0) //if different sign or a_i smaller than a_i-1
+        {
+            methodLog("Wyznacznik równy zero", true, false);
+            return false; //polynomial is not stable by Hurwitz
+        }
+    }
+
+    return true;
 }

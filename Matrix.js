@@ -175,17 +175,12 @@ class Matrix
         return new Matrix(MatHelp);
     }
 
-    multiply(MatIn)
-    {
-        const MatHelp = JSON.parse(JSON.stringify(this.Mat));
-
-        if(typeof(MatIn) === "number")
-        {
-            for (let i = 0; i < this.Mat.length; i++)
-            {
-                for (let j = 0; j < this.Mat[i].length; j++)
-                {
-                       MatHelp[i][j] *= MatIn;
+    multiply(MatIn) {
+        if (typeof MatIn === "number") {
+            const MatHelp = JSON.parse(JSON.stringify(this.Mat));
+            for (let i = 0; i < this.Mat.length; i++) {
+                for (let j = 0; j < this.Mat[i].length; j++) {
+                    MatHelp[i][j] *= MatIn;
                 }
             }
             return new Matrix(MatHelp);
@@ -196,9 +191,10 @@ class Matrix
             throw new Error("Nr of columns of first matrix and nr of rows of second matrix aren't equal");
         }
 
+        const MatHelp = new Array(this.Mat.length).fill(null).map(() => new Array(MatIn.getMat()[0].length).fill(0));
+
         for (let i = 0; i < this.Mat.length; i++)
         {
-            let row = [];
             for (let j = 0; j < MatIn.getMat()[0].length; j++)
             {
                 let value = 0.0;
@@ -206,24 +202,37 @@ class Matrix
                 {
                     value += this.Mat[i][k] * MatIn.getMat()[k][j];
                 }
-                row.push(value);
+                MatHelp[i][j] = value;
             }
-            MatHelp.push(row);
         }
         return new Matrix(MatHelp);
     }
 
+
     toPowerOf(n)
     {
         let ret = JSON.parse(JSON.stringify(this));
-        if(n === 1)
+        if(n < 0)
+        {
+            ret = ret.inverse();
+        }
+
+        if(n === 0)
         {
             return ret.eye(ret.Mat.length);
         }
+
+        if(n === 1)
+        {
+            return ret;
+        }
+
         for (let i = 1; i < Math.abs(n); i++)
         {
             ret = ret.multiply(ret);
         }
+
+        return ret;
     }
 
     transpose()
