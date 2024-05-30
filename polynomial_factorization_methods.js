@@ -30,21 +30,25 @@ function kroneckersMethod(pol)
         let X = new Array(0);
 
         let nrOfPoints = Math.ceil(degree/2) + 1;
-        let bestPoints = getBestPoints(nrOfPoints, pol);
+        let points = getBestPoints(nrOfPoints, pol);
 
         for (let i = 0; i < nrOfPoints; i++)
         {
-            xValue = bestPoints[0][i];
+            xValue = points[0][i];
             X.push(xValue);
-            yValue = bestPoints[1][i];
+            yValue = points[1][i];
 
             if(yValue === 0) //if root found
             {
                 a = new Polynomial([-1*xValue, 1]);
                 b = pol.divide(a);
+                console.log("pol = " + pol.toStringBackward());
+                console.log("a = " + a.toStringBackward());
+                console.log("b = " + b.toStringBackward());
                 rootFound = true;
                 methodLog("Znaleziono pierwiastek f(" + xValue + ") = " + yValue);
-                methodLog("a = " + a.toHTMLStringBackward());
+                methodLog("Dwumian utworzony na podstawie pierwiastka x = " + xValue, true, true);
+                methodLog(a.toHTMLStringBackward());
                 methodLog("b = " + b.toHTMLStringBackward());
                 break;
             }
@@ -92,8 +96,7 @@ function kroneckersMethod(pol)
                 methodLog("", false, true);
 
                 a = lagrangeInterpolationPolynomial(Math.round(degree/2),X,Y);
-                methodLog("a = " + a.toHTMLStringBackward());
-
+                methodLog("Wielomian utworzony na podstawie interpolacji punktów powstałych z dzielników ", true, true);
                 //divide main polynomial by found polynomial
                 b = pol.divide(a);
 
@@ -103,7 +106,7 @@ function kroneckersMethod(pol)
                 }
                 else if((a.getDegree() === 0 && a.coefficients[0] === 1) || (a.getDegree() === 0 && a.coefficients[0] === -1))
                 {
-                    methodLog("Wielomian " + a.toHTMLStringBackward() + " nie ma sensu ");
+                    methodLog("Wielomian " + a.toHTMLStringBackward() + " jest pozbawiony sensu ");
                 }
                 else if(!a.hasOnlyIntegerCoefficients())
                 {
@@ -210,7 +213,7 @@ function kroneckersHausmannsMethod(pol)
     else
     {
         m = getM(pol);
-        methodLog("Wielomian " + pol.toHTMLStringBackward() + " nie jest stabilny ", false, true);
+        methodLog(", więc wielomian " + pol.toHTMLStringBackward() + " nie jest stabilny ", false, true);
         methodLog("Wyznaczamy m = " + m, false, true);
 
         pol = pol.getPolynomialMovedByVector([-(m+1),0]);
@@ -679,7 +682,7 @@ function getBestPoints(nrOfPoints, pol)
 
     let x,y,nrOfDivisors;
 
-    for (let i = -4 * nrOfPoints; i < 4 * nrOfPoints; i++)
+    for (let i = -3 * nrOfPoints; i < 3 * nrOfPoints; i++)
     {
         x = i;
         y = pol.f(x);
@@ -781,10 +784,14 @@ function isStableByHurwitz(pol)
     }
 
     let det;
+    let mat;
     for (let i = 1; i < pol.coefficients.length; i++)
     {
-        det = getMatrixOfCoefficients(pol.coefficients,i).det();
-        methodLog("W" + i + " = " + det, true, false);
+        mat = getMatrixOfCoefficients(pol.coefficients,i);
+        det = mat.det();
+        methodLog("W<sub>" + i + "</sub> = ", true, false);
+        methodLog(mat.toHTMLString(true), true, false);
+        methodLog(" = " + det, true, false);
         methodLog((det > 0 ? " > " : det < 0 ? " < " : " = ") + "0", false, true);
 
         if(det < 0) //if different sign or a_i smaller than a_i-1
@@ -802,3 +809,4 @@ function isStableByHurwitz(pol)
 
     return true;
 }
+

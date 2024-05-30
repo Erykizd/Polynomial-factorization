@@ -20,10 +20,15 @@ function setup()
 	inputs[0].addEventListener("change", () =>
 	{
 		addModule();
-		inputChanged(document.getElementById("autoFactorize").checked);
+		inputChanged(document.getElementById("autoFactor").checked);
 	});
 
-	document.getElementById("factorizeButton").addEventListener("click", () =>
+	document.getElementById("factorButton").addEventListener("click", () =>
+	{
+		inputChanged(true);
+	});
+
+	document.getElementById("autoFactor").addEventListener("click", () =>
 	{
 		inputChanged(true);
 	});
@@ -40,7 +45,24 @@ function inputChanged(doIt = true)
 		let roots = [];
 		[X,Y] = getDataToDraw(-5,5,0.1);
 		clearMethodLogs();
-		factorPolynomial();
+
+		document.getElementById("bufforing").classList.remove("hidden");
+		document.getElementById("result").classList.add("hidden");
+
+		setTimeout(()=>
+		{
+			factorPolynomial()
+				.then((message) =>
+				{
+					console.log(message); // Wyświetla komunikat po zakończeniu obliczeń
+					document.getElementById("bufforing").classList.add("hidden");
+					document.getElementById("result").classList.remove("hidden");
+				})
+				.catch((error) =>
+				{
+					console.error(error); // Obsługuje ewentualny błąd
+				});
+		}, 1);
 		chartController.plot(X,Y,0,inputPolynomial.toStringBackward(),"lime",2);
 	}
 }
@@ -53,7 +75,7 @@ function addModule()
 
 	newInput.addEventListener("change", () =>
 	{
-		inputChanged(document.getElementById("autoFactorize").checked);
+		inputChanged(document.getElementById("autoFactor").checked);
 	});
 
 	let insertedValue = Number(inputs[inputs.length - 1].value); //remember inserted value before adding new module
@@ -113,10 +135,31 @@ function setMethodSelector()
 	}
 
 	methodSelector.selectedIndex = 0;
+
+	let selectedIndexFromLocalStorage = localStorage.getItem("selectedMethodIndex");
+
+	if(selectedIndexFromLocalStorage !== null)
+	{
+		methodSelector.selectedIndex = selectedIndexFromLocalStorage;
+	}
+
 	methodSelector.addEventListener("change", ()=>
 	{
 		clearMethodLogs();
-		factorPolynomial();
+		setTimeout(()=>
+		{
+			factorPolynomial()
+				.then((message) =>
+				{
+					console.log(message); // Wyświetla komunikat po zakończeniu obliczeń
+					document.getElementById("bufforing").classList.add("hidden");
+					document.getElementById("result").classList.remove("hidden");
+				})
+				.catch((error) =>
+				{
+					console.error(error); // Obsługuje ewentualny błąd
+				});
+		}, 1);
 	});
 }
 
@@ -166,54 +209,57 @@ function getRoots()
 
 function factorPolynomial()
 {
-	console.clear();
-
-	pols = [];
-	let str = "";
-	let p = document.getElementById("factoredPolynomial");
-
-	inputPolynomial = getInputPolynomial();
-	document.getElementById("mainPolynomial").innerHTML = inputPolynomial.toHTMLStringBackward();
-
-	let polynomialFactors;
-	switch (methodSelector.selectedOptions[0].index)
+	return new Promise((resolve, reject) =>
 	{
-		case 0:
-			polynomialFactors = kroneckersMethod(inputPolynomial);
-			break;
-		case 1:
-			polynomialFactors = kroneckersHausmannsMethod(inputPolynomial);
-			break;
-		default:
-			polynomialFactors = kroneckersMethod(inputPolynomial);
-	}
+		console.clear();
+		pols = [];
+		let str = "";
+		let p = document.getElementById("factoredPolynomial");
+		p.innerHTML = "";
+		inputPolynomial = getInputPolynomial();
+		document.getElementById("mainPolynomial").innerHTML = inputPolynomial.toHTMLStringBackward();
 
-	let X = [];
-	let Y = [];
-	let name = "";
+		localStorage.setItem("selectedMethodIndex", methodSelector.selectedOptions[0].index);
 
-
-	chartController.clear();
-	chartController.plot(X,Y,0,inputPolynomial.toStringBackward(),"lime",2);
-
-	for (let i = 0; i < polynomialFactors.length; i++)
-	{
-		if(polynomialFactors.length > 1)
+		let polynomialFactors;
+		switch (methodSelector.selectedOptions[0].index)
 		{
-			str += "(";
-		}
-		str += polynomialFactors[i].toHTMLStringBackward();
-		if(polynomialFactors.length > 1)
-		{
-			str += ")";
+			case 0:
+				polynomialFactors = kroneckersMethod(inputPolynomial);
+				break;
+			case 1:
+				polynomialFactors = kroneckersHausmannsMethod(inputPolynomial);
+				break;
+			default:
+				polynomialFactors = kroneckersMethod(inputPolynomial);
 		}
 
-		[X,Y] = getDataToDraw(-5,5,0.1,polynomialFactors[i]);
-		name = polynomialFactors[i].toStringBackward();
-		chartController.plot(X,Y,i+1,name,basicColors[i % basicColors.length],2);
-	}
+		let X = [];
+		let Y = [];
+		let name = "";
+		chartController.clear();
+		chartController.plot(X, Y, 0, inputPolynomial.toStringBackward(), "lime", 2);
 
-	p.innerHTML = str;
+		for (let i = 0; i < polynomialFactors.length; i++)
+		{
+			if (polynomialFactors.length > 1)
+			{
+				str += "(";
+			}
+			str += polynomialFactors[i].toHTMLStringBackward();
+			if (polynomialFactors.length > 1)
+			{
+				str += ")";
+			}
+
+			[X, Y] = getDataToDraw(-5, 5, 0.1, polynomialFactors[i]);
+			name = polynomialFactors[i].toStringBackward();
+			chartController.plot(X, Y, i + 1, name, basicColors[i % basicColors.length], 2);
+		}
+
+		p.innerHTML = str;
+		resolve("Factorization completed successfully.");
+	});
 }
 
 function findDivisors(number)

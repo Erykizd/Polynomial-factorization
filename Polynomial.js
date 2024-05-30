@@ -5,12 +5,14 @@ class Polynomial
     constructor(coefficients = [])
     {
         this.coefficients = JSON.parse(JSON.stringify(coefficients));
+        this.correctCoefficients();
     }
 
     add(b)
     {
         let a = this;
         let c;
+
         if(typeof(b) == 'number')
         {
             c = new Polynomial(a.coefficients);
@@ -18,28 +20,25 @@ class Polynomial
             return c;
         }
 
-        let deg1 = a.coefficients.length - 1;
-        let deg2 = b.coefficients.length - 1;
-        c = new Polynomial(new Array(Math.max(deg1, deg2) + 1).fill(0));
+        c = new Polynomial([]);
 
-        let i = 0;
-        for (i = 0; i < Math.min(deg1, deg2) + 1; i++)
+        for (let i = 0; i < Math.max(a.getDegree() + 1, b.getDegree() + 1); i++)
         {
-            c.coefficients[i] = a.coefficients[i] + b.coefficients[i]
-        }
-
-        for (i; i < Math.max(deg1, deg2) + 1; i++)
-        {
-            if(a.coefficients.length > b.coefficients.length)
+            if(i > a.getDegree())
             {
-                c.coefficients[i] = a.coefficients[i];
+                c.coefficients.push(b.coefficients[i]);
+            }
+            else if(i > b.getDegree())
+            {
+                c.coefficients.push(a.coefficients[i]);
             }
             else
             {
-                c.coefficients[i] = b.coefficients[i]
+                c.coefficients.push(a.coefficients[i] + b.coefficients[i]);
             }
         }
 
+        c.correctCoefficients();
         return c;
     }
 
@@ -50,21 +49,32 @@ class Polynomial
 
         if(typeof(b) == 'number')
         {
-            c = new Polynomial(a.coefficients);
-            c.coefficients[0] -= b;
+            c = new a.add(-b);
             return c;
         }
 
-        let h = b.multiply(new Polynomial([-1]));
-        c = new Polynomial(new Array(Math.max(a.coefficients.length, h.coefficients.length)).fill(0));
+        c = new Polynomial([]);
 
-        for (let i = 0; i < c.coefficients.length; i++)
+        for (let i = 0; i < Math.max(a.getDegree() + 1, b.getDegree() + 1); i++)
         {
-            c.coefficients[i] = a.coefficients[i] + h.coefficients[i];
+            if(i > a.getDegree())
+            {
+                c.coefficients.push(-b.coefficients[i]);
+            }
+            else if(i > b.getDegree())
+            {
+                c.coefficients.push(a.coefficients[i]);
+            }
+            else
+            {
+                c.coefficients.push(a.coefficients[i] - b.coefficients[i]);
+            }
         }
 
+        c.correctCoefficients();
         return c;
     }
+
 
     multiply(b)
     {
@@ -81,15 +91,16 @@ class Polynomial
             return c;
         }
 
-        let deg1 = a.coefficients.length - 1;
-        let deg2 = b.coefficients.length - 1;
-        c = new Polynomial(new Array(deg1 + deg2 + 1).fill(0));
+        let deg1 = a.getDegree();
+        let deg2 = b.getDegree();
+        let h = new Polynomial([0]);
+        c = new Polynomial(new Array(deg1+deg2+1));
 
         for (let i = 0; i < a.coefficients.length; i++)
         {
             for (let j = 0; j < b.coefficients.length; j++)
             {
-                c.coefficients[i + j] += a.coefficients[i] * b.coefficients[j];
+                c.coefficients[i + j] += (a.coefficients[i] * b.coefficients[j]);
             }
         }
 
@@ -106,9 +117,20 @@ class Polynomial
             return a;
         }
 
-        for (let i = 0; i < n; i++)
+        if(n === 0)
+        {
+            return c;
+        }
+
+        for (let i = 0; i < Math.abs(n); i++)
         {
             c = c.multiply(a);
+        }
+
+        if(n < 0)
+        {
+            let one = new Polynomial([1]);
+            c = one.divide(c);
         }
 
         return c;
@@ -129,28 +151,31 @@ class Polynomial
             return c;
         }
 
-        let deg1 = a.coefficients.length - 1;
-        let deg2 = b.coefficients.length - 1;
+        let deg1 = a.getDegree();
+        let deg2 = b.getDegree();
         const deg3 = deg1 - deg2;
-        let r = new Polynomial([...a.coefficients]); // Deep copy of polynomial a
-        c = new Polynomial(new Array(deg3 + 1).fill(0));
+        let r = new Polynomial([...a.coefficients]) // Deep copy of polynomial a
+        c = new Polynomial([0]);
         let divisor = b.coefficients[deg2]; // Leading coefficient of b
         let term;
         let product;
-        let z = new Polynomial([1]);
+        let z = new Polynomial([0]);
 
         for (let i = 0; i <= deg3; i++)
         {
             if (divisor === 0)
             {
-                throw new Error("Division by zero");
+                throw new Error("Division by zero (" + r.coefficients[deg1 - i] + " / " + divisor + ")");
             }
 
-            c.coefficients[deg3 - i] = r.coefficients[deg1 - i] / divisor; //setting next word in score
-            term = z.zerosAndOne(deg3, deg3 - i);
-            term = term.multiply(c.coefficients[deg3 - i]);
+            term = z.zerosAndNr(r.coefficients[r.getDegree()] / divisor, r.getDegree()-b.getDegree());
             product = term.multiply(b);
             r = r.subtract(product);
+            c = c.add(term); //setting next word in score
+            if(JSON.stringify(r.coefficients) === JSON.stringify([0]))
+            {
+                break;
+            }
         }
 
         for (let i = 0; i < r.coefficients.length; i++)
@@ -162,10 +187,7 @@ class Polynomial
         }
 
         // Trim leading zeros in the result
-        while (c.coefficients.length > 1 && c.coefficients[c.coefficients.length - 1] === 0)
-        {
-            c.coefficients.pop();
-        }
+        c.correctCoefficients();
 
         return c;
     }
@@ -208,6 +230,11 @@ class Polynomial
 
     toHTMLString()
     {
+        if(JSON.stringify(this.coefficients) === JSON.stringify([0]))
+        {
+            return "0";
+        }
+
         let str = "";
 
         for (let i = 0; i < this.coefficients.length; i++)
@@ -227,6 +254,11 @@ class Polynomial
 
     toHTMLStringBackward()
     {
+        if(JSON.stringify(this.coefficients) === JSON.stringify([0]))
+        {
+            return "0";
+        }
+
         let str = "";
 
         for (let i = this.coefficients.length - 1; i >= 0; i--)
@@ -246,6 +278,11 @@ class Polynomial
 
     toString()
     {
+        if(JSON.stringify(this.coefficients) === JSON.stringify([0]))
+        {
+            return "0";
+        }
+
         let str = "";
 
         for (let i = 0; i < this.coefficients.length; i++)
@@ -265,6 +302,11 @@ class Polynomial
 
     toStringBackward()
     {
+        if(JSON.stringify(this.coefficients) === JSON.stringify([0]))
+        {
+            return "0";
+        }
+
         let str = "";
 
         for (let i = this.coefficients.length - 1; i >= 0; i--)
@@ -311,19 +353,24 @@ class Polynomial
 
     zerosAndOne(deg, oneIndex)
     {
-        let pol = new Polynomial(Array(deg + 1));
-
-        for (let i = 0; i <= deg; i++)
+        let pol = new Polynomial([]);
+        while (pol.coefficients.length < oneIndex)
         {
-            if (i == oneIndex)
-            {
-                pol.coefficients[i] = 1;
-            }
-            else
-            {
-                pol.coefficients[i] = 0;
-            }
+            pol.coefficients.push(0);
         }
+        pol.coefficients.push(1);
+
+        return pol;
+    }
+
+    zerosAndNr(nr,nrIndex)
+    {
+        let pol = new Polynomial([]);
+        while (pol.coefficients.length < nrIndex)
+        {
+            pol.coefficients.push(0);
+        }
+        pol.coefficients.push(nr);
 
         return pol;
     }
@@ -350,7 +397,22 @@ class Polynomial
 
     getDegree()
     {
+        for (let i = this.coefficients.length - 1; i >= 0; i--)
+        {
+            if(this.coefficients[i] !== 0)
+            {
+                return i;
+            }
+        }
         return this.coefficients.length - 1;
+    }
+
+    correctCoefficients()
+    {
+        while (this.coefficients[this.coefficients.length - 1] === 0 && this.coefficients.length > 1)
+        {
+            this.coefficients.pop();
+        }
     }
 
     hasOnlyIntegerCoefficients()

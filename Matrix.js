@@ -329,8 +329,92 @@ class Matrix
         const cofactorMatrix = new Matrix(cofactors);
         const adjugateMatrix = cofactorMatrix.transpose();
 
-        const inverseMatrix = adjugateMatrix.multiply(1 / det);
+        const inversedMatrix = adjugateMatrix.multiply(1 / det);
 
-        return inverseMatrix;
+        return inversedMatrix;
+    }
+
+    toString(displayAsDet = false)
+    {
+        let str = "";
+
+        for (let i = 0; i < this.Mat.length; i++)
+        {
+            if(i === 0 && !displayAsDet)
+            {
+                str += "┌ ";
+            }
+            else if(i === this.Mat.length - 1  && !displayAsDet)
+            {
+                str += "└ "
+            }
+            else
+            {
+                str += "| ";
+            }
+
+            for (let j = 0; j < this.Mat[i].length; j++)
+            {
+                str += (this.Mat[i][j] + " ");
+            }
+
+            if(i === 0 && !displayAsDet)
+            {
+                str += "┐";
+            }
+            else if(i === this.Mat.length - 1 && !displayAsDet)
+            {
+                str += "┘"
+            }
+            else
+            {
+                str += "|";
+            }
+
+            str += "\n";
+        }
+        return str;
+    }
+
+    toHTMLString(displayAsDet = false)
+    {
+        let str = "";
+
+        for (let i = 0; i < this.Mat.length; i++)
+        {
+            if(i === 0 && !displayAsDet)
+            {
+                str += "┌ ";
+            }
+            else if(i === this.Mat.length - 1 && !displayAsDet)
+            {
+                str += "└ "
+            }
+            else
+            {
+                str += "| ";
+            }
+
+            for (let j = 0; j < this.Mat[i].length; j++)
+            {
+                str += (this.Mat[i][j] + " ");
+            }
+
+            if(i === 0 && !displayAsDet)
+            {
+                str += "┐";
+            }
+            else if(i === this.Mat.length - 1 && !displayAsDet)
+            {
+                str += "┘"
+            }
+            else
+            {
+                str += "|";
+            }
+
+            str += "<br>";
+        }
+        return str;
     }
 }

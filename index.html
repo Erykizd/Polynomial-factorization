@@ -14,10 +14,10 @@
     </select>
 
     <br>
-    <div id = "factorizeControl">
-    <label for = "autoFactorize">Auto faktoryzacja</label>
-    <input type = "checkbox" id = "autoFactorize" checked>
-    <button id = "factorizeButton"> Faktoryzuj </button>
+    <div id = "factorControl">
+    <label for = "autoFactor">Auto faktoryzacja</label>
+    <input type = "checkbox" id = "autoFactor" checked>
+    <button id = "factorButton"> Faktoryzuj </button>
     </div>
 
     <h2>Wprowadź wielomian</h2>
@@ -37,6 +37,11 @@
         <p id="factoredPolynomial"></p>
         <h2>Kroki:</h2>
         <p id="methodsContent"></p>
+    </div>
+
+    <div id = "bufforing" class = "hidden">
+        <p>Computing...</p>
+        <img src="animation.gif">
     </div>
 
     <h2>Wykres:</h2>

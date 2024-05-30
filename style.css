@@ -90,6 +90,7 @@ select
 	border: 3px solid lime;
 	border-radius: 25px;
 	cursor: pointer;
+	padding: 10px;
 }
 
 input[type="checkbox"]
@@ -110,8 +111,13 @@ input
 	opacity: 0.4;
 }
 
-#factorizeControl:has(input:checked)>button
+#factorControl:has(input:checked)>button
 {
 	display: none;
 	cursor: default;
+}
+
+.hidden
+{
+	display: none;
 }
