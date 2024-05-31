@@ -238,6 +238,7 @@ function factorPolynomial()
 		let Y = [];
 		let name = "";
 		chartController.clear();
+		[X, Y] = getDataToDraw(-5, 5, 0.1, inputPolynomial)
 		chartController.plot(X, Y, 0, inputPolynomial.toStringBackward(), "lime", 2);
 
 		for (let i = 0; i < polynomialFactors.length; i++)

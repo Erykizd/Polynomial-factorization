@@ -17,7 +17,7 @@ function kroneckersMethod(pol)
 
     if(pol.getDegree() > 0)
     {
-        methodLog("Wielomian do sfaktoryzowania: ");
+        methodLog("Wielomian, który chcemy sfaktoryzować: ");
         methodLog(pol.toHTMLStringBackward());
         //find divisors
         let matrixOfDivisors = new Array(new Array(0));
@@ -42,14 +42,12 @@ function kroneckersMethod(pol)
             {
                 a = new Polynomial([-1*xValue, 1]);
                 b = pol.divide(a);
-                console.log("pol = " + pol.toStringBackward());
-                console.log("a = " + a.toStringBackward());
-                console.log("b = " + b.toStringBackward());
                 rootFound = true;
                 methodLog("Znaleziono pierwiastek f(" + xValue + ") = " + yValue);
                 methodLog("Dwumian utworzony na podstawie pierwiastka x = " + xValue, true, true);
                 methodLog(a.toHTMLStringBackward());
-                methodLog("b = " + b.toHTMLStringBackward());
+                methodLog("Wielomian utworzony przez podzielenie wielomianu " + pol.toHTMLStringBackward() + " przez wielomian " + a.toHTMLStringBackward(), true, true);
+                methodLog(b.toHTMLStringBackward());
                 break;
             }
 
@@ -81,6 +79,8 @@ function kroneckersMethod(pol)
                     Y[i] = matrixOfDivisors[i][customNr.getNr()[i]]; //setting y values according to custom nr
                 }
 
+                methodLog("Wielomian utworzony na podstawie interpolacji punktów (powstałych z dzielników): ", true, true);
+
                 methodLog("X = ", true, false);
                 for (let i = 0; i < X.length; i++)
                 {
@@ -96,7 +96,8 @@ function kroneckersMethod(pol)
                 methodLog("", false, true);
 
                 a = lagrangeInterpolationPolynomial(Math.round(degree/2),X,Y);
-                methodLog("Wielomian utworzony na podstawie interpolacji punktów powstałych z dzielników ", true, true);
+                methodLog(a.toHTMLStringBackward());
+
                 //divide main polynomial by found polynomial
                 b = pol.divide(a);
 
@@ -114,12 +115,15 @@ function kroneckersMethod(pol)
                 }
                 else if(!b.hasOnlyIntegerCoefficients())
                 {
-                    methodLog("b = " + b.toHTMLStringBackward());
+
+                    methodLog("Wielomian utworzony przez podzielenie wielomianu " + pol.toHTMLStringBackward() + " przez wielomian " + a.toHTMLStringBackward(), true, true);
+                    methodLog(b.toHTMLStringBackward());
                     methodLog("Wielomian " + b.toHTMLStringBackward() + " ma niecałkowite współczynniki ");
                 }
                 else if(b.getDegree() >= 0 && a.hasOnlyIntegerCoefficients() && b.hasOnlyIntegerCoefficients())
                 {
-                    methodLog("b = " + b.toHTMLStringBackward());
+                    methodLog("Wielomian utworzony przez podzielenie wielomianu " + pol.toHTMLStringBackward() + " przez wielomian " + a.toHTMLStringBackward(), true, true);
+                    methodLog(b.toHTMLStringBackward());
                     toFactorize = true;
                     break;
                 }
@@ -682,7 +686,7 @@ function getBestPoints(nrOfPoints, pol)
 
     let x,y,nrOfDivisors;
 
-    for (let i = -3 * nrOfPoints; i < 3 * nrOfPoints; i++)
+    for (let i = -2 * nrOfPoints; i < 2 * nrOfPoints; i++)
     {
         x = i;
         y = pol.f(x);
