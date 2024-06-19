@@ -31,7 +31,7 @@ function kroneckersMethod(pol)
         let X = new Array(0);
 
         let nrOfPoints = Math.ceil(degree/2) + 1;
-        let points = getBestPointsSeparatedByEqualIntervals(nrOfPoints, pol);
+        let points = getBestPoints(nrOfPoints, pol);
 
         for (let i = 0; i < nrOfPoints; i++)
         {
@@ -73,7 +73,7 @@ function kroneckersMethod(pol)
                 nrOfAllCases *= matrixOfDivisors[i].length;
             }
 
-            console.log("Nr of all cases: " + nrOfAllCases);
+            console.log("Nr of all cases: " + nrOfAllCases + " for " + pol.toStringBackward());
 
             let customNr = new CustomNrSystem(Ls,0);
             let customOne = new CustomNrSystem(Ls,1);
@@ -141,6 +141,7 @@ function kroneckersMethod(pol)
                         + ", więc szukamy dalej dla kolejnego zestawu dzielników");
                 }
 
+                console.log("custom nr = " + customNr.toDecNr());
                 customNr = customNr.add(customOne);
             }
             while (customNr.toDecNr() !== 0);
@@ -244,7 +245,7 @@ function kroneckersHausmannsMethod(pol)
     let X = new Array(0);
     let Y = new Array(0);
 
-    let nrOfPoints = degree + 1;
+    let nrOfPoints = Math.ceil(degree/2) + 1;
     let points = getBestPointsSeparatedByEqualIntervals(nrOfPoints, pol);
 
     for (let i = 0; i < nrOfPoints; i++)
@@ -304,7 +305,7 @@ function kroneckersHausmannsMethod(pol)
             nrOfAllCases *= matrixOfDivisors[i].length;
         }
 
-        console.log("Nr of all cases: " + nrOfAllCases);
+        console.log("Nr of all cases: " + nrOfAllCases + " for " + pol.toStringBackward());
 
         let customNr = new CustomNrSystem(Ls,0);
         let customOne = new CustomNrSystem(Ls,1);
@@ -337,6 +338,7 @@ function kroneckersHausmannsMethod(pol)
             if(degrees[0] + degrees[1] !== degree || degrees[0] < 0 || degrees[1] < 0)
             {
                 methodLog("Powyższy zestaw dzielników należy pominąć");
+                console.log("custom nr = " + customNr.toDecNr());
                 customNr = customNr.add(customOne);
                 continue;
             }
@@ -364,7 +366,7 @@ function kroneckersHausmannsMethod(pol)
             }
             else if((a.getDegree() === 0 && a.coefficients[0] === 1) || (a.getDegree() === 0 && a.coefficients[0] === -1))
             {
-                methodLog("Wielomian " + a.toHTMLStringBackward() + " nie ma sensu ");
+                methodLog("Wielomian " + a.toHTMLStringBackward() + " jest pozbawiony sensu ");
             }
             else if(!a.hasOnlyIntegerCoefficients())
             {
@@ -372,12 +374,14 @@ function kroneckersHausmannsMethod(pol)
             }
             else if(!b.hasOnlyIntegerCoefficients())
             {
-                methodLog("b = " + b.toHTMLStringBackward());
+                methodLog("Wielomian powstały przez podzielenie wielomianu " + pol.toHTMLStringBackward() + "przez wielomian" + b.toHTMLStringBackward());
+                methodLog(b.toHTMLStringBackward());
                 methodLog("Wielomian " + b.toHTMLStringBackward() + " ma niecałkowite współczynniki ");
             }
             else if(b.getDegree() >= 0 && a.hasOnlyIntegerCoefficients() && b.hasOnlyIntegerCoefficients())
             {
-                methodLog("Wielomian b = " + b.toHTMLStringBackward());
+                methodLog("Wielomian powstały przez podzielenie wielomianu " + pol.toHTMLStringBackward() + "przez wielomian" + b.toHTMLStringBackward());
+                methodLog(b.toHTMLStringBackward());
                 if(isMoved)
                 {
                     methodLog("Wielomian b przesunięty z powrotem = " + b.getPolynomialMovedByVector([(m+1),0]).toHTMLStringBackward());
@@ -388,9 +392,10 @@ function kroneckersHausmannsMethod(pol)
             }
             else
             {
-                methodLog("Wielomian " + pol.toHTMLStringBackward() + " nie jest podzielny przez " + a.toHTMLStringBackward());
+                methodLog("Wielomian " + pol.toHTMLStringBackward() + " nie jest podzielny przez wielomian" + a.toHTMLStringBackward());
             }
 
+            console.log("custom nr = " + customNr.toDecNr());
             customNr = customNr.add(customOne);
         }
         while (customNr.toDecNr() !== 0);
@@ -670,7 +675,6 @@ function getCoefficients(table)
 }
 
 
-
 function isIncreasingSequence(seq)
 {
     for (let i = 1; i < seq.length; i++)
@@ -738,7 +742,7 @@ function getBestPoints(nrOfPoints, pol)
     let X = [];
     let Y = [];
 
-    for (let i = -2 * nrOfPoints; i < 2 * nrOfPoints; i++)
+    for (let i = -4 * nrOfPoints; i < 4 * nrOfPoints; i++)
     {
         let x = i;
         let y = pol.f(x);
@@ -785,7 +789,7 @@ function getBestPointsSeparatedByEqualIntervals(nrOfPoints, pol)
 
     let rootFound = false;
 
-    for (let j = 1; j <= 22; j++)
+    for (let j = 1; j <= 20; j++)
     {
         nrOfAllDivisors = 0;
         X = [];
