@@ -15,9 +15,11 @@
 
     <br>
     <div id = "factorControl">
-    <label for = "autoFactor">Auto faktoryzacja</label>
-    <input type = "checkbox" id = "autoFactor" checked>
-    <button id = "factorButton"> Faktoryzuj </button>
+        <label for = "autoFactor">Auto faktoryzacja</label>
+        <input type = "checkbox" id = "autoFactor" checked>
+        <button id = "factorButton"> Faktoryzuj </button>
+        <label for = "showSteps">Pokaż etapy rozwiązania</label>
+        <input type = "checkbox" id = "showSteps" checked>
     </div>
 
     <h2>Wprowadź wielomian</h2>
@@ -29,28 +31,32 @@
         </div>
     </div>
 
-    <div>
+    <div id = "output">
         <div>
-            <h2>Postać ogólna:</h2>
-            <p id="mainPolynomial"></p>
+            <div>
+                <h2>Postać ogólna:</h2>
+                <p id="mainPolynomial"></p>
+            </div>
+
+            <div id="result">
+                <h2>Postać iloczynowa:</h2>
+                <p id="factoredPolynomial"></p>
+                <div id = "steps">
+                    <h2>Etapy rozwiązania:</h2>
+                    <p id="methodsContent"></p>
+                </div>
+            </div>
         </div>
 
-        <div id="result">
-            <h2>Postać iloczynowa:</h2>
-            <p id="factoredPolynomial"></p>
-            <h2>Etapy rozwiązania:</h2>
-            <p id="methodsContent"></p>
+        <h2>Wykres:</h2>
+        <div id="chartContainer">
+            <canvas id="chart" width="400" height="200"></canvas>
         </div>
     </div>
 
     <div id = "bufforing" class = "hidden">
         <p>Trwa obliczanie...</p>
         <img src="animation.gif">
-    </div>
-
-    <h2>Wykres:</h2>
-    <div id="chartContainer">
-        <canvas id="chart" width="400" height="200"></canvas>
     </div>
 
     <script src="CustomNrSystem.js"></script>

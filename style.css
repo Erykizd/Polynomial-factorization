@@ -111,13 +111,86 @@ input
 	opacity: 0.4;
 }
 
-#factorControl:has(input:checked)>button
+#factorControl:has(#autoFactor:checked)>button
 {
 	display: none;
+	cursor: default;
+}
+
+#steps
+{
+	display: none;
+}
+
+body:has(#showSteps:checked) #steps
+{
+	display: block;
 	cursor: default;
 }
 
 .hidden
 {
 	display: none;
+}
+
+.matrix
+{
+	width: 20%;
+	margin-left: 40%;
+	margin-right: 40%;
+	height: 100px;
+}
+
+.matrix td
+{
+	text-align: center;
+}
+
+.top
+{
+	border-top: solid 1px lime;
+}
+
+.bottom
+{
+	border-bottom: solid 1px lime;
+}
+
+.left
+{
+	border-left: solid 1px lime;
+}
+
+.right
+{
+	border-right: solid 1px lime;
+}
+
+
+/* Scrollbar color */
+::-webkit-scrollbar
+{
+	color: lime;
+	width: 20px; /* Scrollbar width */
+	border-radius: 5px;
+}
+
+/* Scrollbar track background color */
+::-webkit-scrollbar-track
+{
+	background-color: black;
+	border-radius: 5px;
+}
+
+/* Scrollbar thumb color */
+::-webkit-scrollbar-thumb
+{
+	background-color: lime;
+	border-radius: 10px;
+}
+
+/* Scrollbar thumb color on hover */
+::-webkit-scrollbar-thumb:hover
+{
+	background-color: green;
 }

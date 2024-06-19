@@ -208,7 +208,6 @@ class Matrix
         return new Matrix(MatHelp);
     }
 
-
     toPowerOf(n)
     {
         let ret = JSON.parse(JSON.stringify(this));
@@ -254,18 +253,22 @@ class Matrix
         return new Matrix(transposedMatrix);
     }
 
-    det() {
-        if (this.Mat.length !== this.Mat[0].length) {
+    det()
+    {
+        if (this.Mat.length !== this.Mat[0].length)
+        {
             throw new Error("Matrix must be square");
         }
 
         const n = this.Mat.length;
 
-        if (n === 1) {
+        if (n === 1)
+        {
             return this.Mat[0][0];
         }
 
-        if (n === 2) {
+        if (n === 2)
+        {
             return this.Mat[0][0] * this.Mat[1][1] - this.Mat[0][1] * this.Mat[1][0];
         }
 
@@ -378,43 +381,60 @@ class Matrix
 
     toHTMLString(displayAsDet = false)
     {
-        let str = "";
+        let div = document.createElement("div");
+        let table = document.createElement("table");
+        let tbody = document.createElement("tbody");
+        let tr;
+        let td;
+        table.classList.add("matrix");
 
         for (let i = 0; i < this.Mat.length; i++)
         {
-            if(i === 0 && !displayAsDet)
-            {
-                str += "┌ ";
-            }
-            else if(i === this.Mat.length - 1 && !displayAsDet)
-            {
-                str += "└ "
-            }
-            else
-            {
-                str += "| ";
-            }
-
+            tr = document.createElement("tr");
             for (let j = 0; j < this.Mat[i].length; j++)
             {
-                str += (this.Mat[i][j] + " ");
-            }
+                td = document.createElement("td");
+                td.innerHTML = this.Mat[i][j];
 
-            if(i === 0 && !displayAsDet)
-            {
-                str += "┐";
-            }
-            else if(i === this.Mat.length - 1 && !displayAsDet)
-            {
-                str += "┘"
-            }
-            else
-            {
-                str += "|";
-            }
+                if (j === 0)
+                {
+                    td.classList.add("left");
+                }
 
-            str += "<br>";
+                if (j === this.Mat[i].length - 1)
+                {
+                    td.classList.add("right");
+                }
+
+                if (!displayAsDet)
+                {
+                    if(i === 0 && j === 0)
+                    {
+                        td.classList.add("top");
+                    }
+
+                    if(i === 0 && j === this.Mat[i].length - 1)
+                    {
+                        td.classList.add("top");
+                    }
+
+                    if(i === this.Mat.length - 1 && j === 0)
+                    {
+                        td.classList.add("bottom");
+                    }
+
+                    if(i === this.Mat.length - 1 && j === this.Mat[i].length - 1)
+                    {
+                        td.classList.add("bottom");
+                    }
+                }
+
+                tr.appendChild(td);
+            }
+            tbody.appendChild(tr);
         }
-        return str;
+        table.appendChild(tbody);
+        div.appendChild(table);
+        return div.outerHTML;
     }
 }
