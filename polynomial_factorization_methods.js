@@ -30,8 +30,8 @@ function kroneckersMethod(pol)
         matrixOfDivisors.pop();
         let X = new Array(0);
 
-        let nrOfPoints = Math.ceil(degree/2) + 1;
-        let points = getBestPoints(nrOfPoints, pol);
+        let nrOfPoints = (Math.floor(degree/2) + 1) + 1; //degree of a + 1
+        let points = getBestPointsSeparatedByEqualIntervals(nrOfPoints, pol);
 
         for (let i = 0; i < nrOfPoints; i++)
         {
@@ -80,6 +80,7 @@ function kroneckersMethod(pol)
 
             do
             {
+                console.log("custom nr = " + customNr.toDecNr());
                 for (let i = 0; i < X.length; i++)
                 {
                     Y[i] = matrixOfDivisors[i][customNr.getNr()[i]]; //setting y values according to custom nr
@@ -141,7 +142,6 @@ function kroneckersMethod(pol)
                         + ", więc szukamy dalej dla kolejnego zestawu dzielników");
                 }
 
-                console.log("custom nr = " + customNr.toDecNr());
                 customNr = customNr.add(customOne);
             }
             while (customNr.toDecNr() !== 0);
@@ -245,7 +245,7 @@ function kroneckersHausmannsMethod(pol)
     let X = new Array(0);
     let Y = new Array(0);
 
-    let nrOfPoints = Math.ceil(degree/2) + 1;
+    let nrOfPoints = (Math.floor(degree/2) + 1) + 1; //degree of a + 1
     let points = getBestPointsSeparatedByEqualIntervals(nrOfPoints, pol);
 
     for (let i = 0; i < nrOfPoints; i++)
@@ -297,7 +297,7 @@ function kroneckersHausmannsMethod(pol)
         let interY = new Array(X.length);
 
         // getting lengths in matrixOfDivisors
-        let Ls = [];
+        let Ls = new Array(0);
         let nrOfAllCases = 1;
         for (let i = 0; i < matrixOfDivisors.length; i++)
         {
@@ -312,6 +312,7 @@ function kroneckersHausmannsMethod(pol)
 
         do
         {
+            console.log("custom nr = " + customNr.toDecNr());
             for (let i = 0; i < X.length; i++)
             {
                 interY[i] = matrixOfDivisors[i][customNr.getNr()[i]]; //setting y values according to custom nr
@@ -346,7 +347,6 @@ function kroneckersHausmannsMethod(pol)
             a = newtonInterpolationPolynomial(degrees[0],X,interY);
             methodLog("Wielomian " + a.toHTMLStringBackward() + " dzieli wielomian " + pol.toHTMLStringBackward(), true, true);
 
-
             if(isMoved)
             {
                 methodLog("Wielomian " + a.toHTMLStringBackward() + " przesunięty z powrotem w niestabilne miejsce ", true, false);
@@ -374,17 +374,17 @@ function kroneckersHausmannsMethod(pol)
             }
             else if(!b.hasOnlyIntegerCoefficients())
             {
-                methodLog("Wielomian powstały przez podzielenie wielomianu " + pol.toHTMLStringBackward() + "przez wielomian" + b.toHTMLStringBackward());
+                methodLog("Wielomian powstały przez podzielenie wielomianu " + pol.toHTMLStringBackward() + " przez wielomian " + b.toHTMLStringBackward());
                 methodLog(b.toHTMLStringBackward());
                 methodLog("Wielomian " + b.toHTMLStringBackward() + " ma niecałkowite współczynniki ");
             }
             else if(b.getDegree() >= 0 && a.hasOnlyIntegerCoefficients() && b.hasOnlyIntegerCoefficients())
             {
-                methodLog("Wielomian powstały przez podzielenie wielomianu " + pol.toHTMLStringBackward() + "przez wielomian" + b.toHTMLStringBackward());
+                methodLog("Wielomian powstały przez podzielenie wielomianu " + pol.toHTMLStringBackward() + " przez wielomian " + b.toHTMLStringBackward());
                 methodLog(b.toHTMLStringBackward());
                 if(isMoved)
                 {
-                    methodLog("Wielomian b przesunięty z powrotem = " + b.getPolynomialMovedByVector([(m+1),0]).toHTMLStringBackward());
+                    methodLog("Wielomian " + b.toHTMLStringBackward() + " przesunięty z powrotem = " + b.getPolynomialMovedByVector([(m+1),0]).toHTMLStringBackward());
                 }
 
                 toFactorize = true;
@@ -392,10 +392,9 @@ function kroneckersHausmannsMethod(pol)
             }
             else
             {
-                methodLog("Wielomian " + pol.toHTMLStringBackward() + " nie jest podzielny przez wielomian" + a.toHTMLStringBackward());
+                methodLog("Wielomian " + pol.toHTMLStringBackward() + " nie jest podzielny przez wielomian " + a.toHTMLStringBackward());
             }
 
-            console.log("custom nr = " + customNr.toDecNr());
             customNr = customNr.add(customOne);
         }
         while (customNr.toDecNr() !== 0);
@@ -482,6 +481,7 @@ function getDegreesOfProducts(a,b)
     methodLog("Wartości a = " + JSON.stringify(a), true, false);
     methodLog("Dzielniki b = " + JSON.stringify(b), true, false);
     methodLog("Dzielniki c = " + JSON.stringify(c), true, true);
+
 
     if( !bIncreasing )
     {
@@ -789,7 +789,7 @@ function getBestPointsSeparatedByEqualIntervals(nrOfPoints, pol)
 
     let rootFound = false;
 
-    for (let j = 1; j <= 20; j++)
+    for (let j = 1; j <= 55; j++)
     {
         nrOfAllDivisors = 0;
         X = [];

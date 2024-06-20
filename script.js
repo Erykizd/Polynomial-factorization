@@ -54,13 +54,13 @@ function inputChanged(doIt = true)
 			factorPolynomial()
 				.then((message) =>
 				{
-					console.log(message); // Wyświetla komunikat po zakończeniu obliczeń
+					console.log(message);
 					document.getElementById("bufforing").classList.add("hidden");
 					document.getElementById("output").classList.remove("hidden");
 				})
 				.catch((error) =>
 				{
-					console.error(error); // Obsługuje ewentualny błąd
+					console.error(error);
 				});
 		}, 10);
 		chartController.plot(X,Y,0,inputPolynomial.toStringBackward(),"lime",2);
