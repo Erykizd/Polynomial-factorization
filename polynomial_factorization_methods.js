@@ -15,6 +15,7 @@ function kroneckersMethod(pol)
     let ret = new Array(0);
     let toFactorize = false;
 
+
     if(pol.getDegree() > 0)
     {
         methodLog("Wielomian, który chcemy sfaktoryzować: ");
@@ -31,7 +32,7 @@ function kroneckersMethod(pol)
         let X = new Array(0);
 
         let nrOfPoints = (Math.floor(degree/2) + 1) + 1; //degree of a + 1
-        let points = getBestPointsSeparatedByEqualIntervals(nrOfPoints, pol);
+        let points = getBestPoints(nrOfPoints, pol);
 
         for (let i = 0; i < nrOfPoints; i++)
         {
@@ -77,6 +78,8 @@ function kroneckersMethod(pol)
 
             let customNr = new CustomNrSystem(Ls,0);
             let customOne = new CustomNrSystem(Ls,1);
+
+            let polHTML = pol.toHTMLStringBackward();
 
             do
             {
@@ -125,20 +128,20 @@ function kroneckersMethod(pol)
                 else if(!b.hasOnlyIntegerCoefficients())
                 {
 
-                    methodLog("Wielomian utworzony przez podzielenie wielomianu " + pol.toHTMLStringBackward() + " przez wielomian " + a.toHTMLStringBackward(), true, true);
+                    methodLog("Wielomian utworzony przez podzielenie wielomianu " + polHTML + " przez wielomian " + a.toHTMLStringBackward(), true, true);
                     methodLog(b.toHTMLStringBackward());
                     methodLog("Wielomian " + b.toHTMLStringBackward() + " ma niecałkowite współczynniki"+ ", więc szukamy dalej dla kolejnego zestawu dzielników");
                 }
                 else if(b.getDegree() >= 0 && a.hasOnlyIntegerCoefficients() && b.hasOnlyIntegerCoefficients())
                 {
-                    methodLog("Wielomian utworzony przez podzielenie wielomianu " + pol.toHTMLStringBackward() + " przez wielomian " + a.toHTMLStringBackward(), true, true);
+                    methodLog("Wielomian utworzony przez podzielenie wielomianu " + polHTML + " przez wielomian " + a.toHTMLStringBackward(), true, true);
                     methodLog(b.toHTMLStringBackward());
                     toFactorize = true;
                     break;
                 }
                 else
                 {
-                    methodLog("Wielomian " + pol.toHTMLStringBackward() + " nie jest podzielny przez " + a.toHTMLStringBackward()
+                    methodLog("Wielomian " + polHTML + " nie jest podzielny przez " + a.toHTMLStringBackward()
                         + ", więc szukamy dalej dla kolejnego zestawu dzielników");
                 }
 
@@ -310,6 +313,8 @@ function kroneckersHausmannsMethod(pol)
         let customNr = new CustomNrSystem(Ls,0);
         let customOne = new CustomNrSystem(Ls,1);
 
+        let polHTML = pol.toHTMLStringBackward();
+
         do
         {
             console.log("custom nr = " + customNr.toDecNr());
@@ -335,17 +340,18 @@ function kroneckersHausmannsMethod(pol)
             methodLog("", false, true);
 
             degrees = getDegreesOfProducts(Y,interY);
+            methodLog("Suma stopni potencjalncyh dzielników: " + degrees[0] + " + " + degrees[1] + " = " + (degrees[0] + degrees[1]));
+            methodLog("Stopień wielomianu " + polHTML + " to " + pol.getDegree());
 
             if(degrees[0] + degrees[1] !== degree || degrees[0] < 0 || degrees[1] < 0)
             {
-                methodLog("Powyższy zestaw dzielników należy pominąć");
-                console.log("custom nr = " + customNr.toDecNr());
+                methodLog("Powyższy zestaw dzielników należy pominąć, gdyż suma stopni potencjalnych wielomianów jest niezgodna ze stopniem rozkładanego wielomianu");
                 customNr = customNr.add(customOne);
                 continue;
             }
 
             a = newtonInterpolationPolynomial(degrees[0],X,interY);
-            methodLog("Wielomian " + a.toHTMLStringBackward() + " dzieli wielomian " + pol.toHTMLStringBackward(), true, true);
+            methodLog("Wielomian " + a.toHTMLStringBackward() + " dzieli wielomian " + polHTML, true, true);
 
             if(isMoved)
             {
@@ -374,13 +380,13 @@ function kroneckersHausmannsMethod(pol)
             }
             else if(!b.hasOnlyIntegerCoefficients())
             {
-                methodLog("Wielomian powstały przez podzielenie wielomianu " + pol.toHTMLStringBackward() + " przez wielomian " + b.toHTMLStringBackward());
+                methodLog("Wielomian powstały przez podzielenie wielomianu " + polHTML + " przez wielomian " + b.toHTMLStringBackward());
                 methodLog(b.toHTMLStringBackward());
                 methodLog("Wielomian " + b.toHTMLStringBackward() + " ma niecałkowite współczynniki ");
             }
             else if(b.getDegree() >= 0 && a.hasOnlyIntegerCoefficients() && b.hasOnlyIntegerCoefficients())
             {
-                methodLog("Wielomian powstały przez podzielenie wielomianu " + pol.toHTMLStringBackward() + " przez wielomian " + b.toHTMLStringBackward());
+                methodLog("Wielomian powstały przez podzielenie wielomianu " + polHTML + " przez wielomian " + b.toHTMLStringBackward());
                 methodLog(b.toHTMLStringBackward());
                 if(isMoved)
                 {
@@ -392,7 +398,7 @@ function kroneckersHausmannsMethod(pol)
             }
             else
             {
-                methodLog("Wielomian " + pol.toHTMLStringBackward() + " nie jest podzielny przez wielomian " + a.toHTMLStringBackward());
+                methodLog("Wielomian " + polHTML + " nie jest podzielny przez wielomian " + a.toHTMLStringBackward());
             }
 
             customNr = customNr.add(customOne);
@@ -486,14 +492,15 @@ function getDegreesOfProducts(a,b)
     if( !bIncreasing )
     {
         methodLog("Widać, że wartości b nie rosną b = " + JSON.stringify(b), true, true);
-        return [b.length,-1];
+        return [b.length-1,-1];
     }
 
     if( !cIncreasing )
     {
         methodLog("Widać, że wartości c nie rosną c = " + JSON.stringify(c), true, true);
-        return [-1,c.length];
+        return [-1,c.length-1];
     }
+
 
     let bDifferenceTable = getDifferenceTable(b);
     let cDifferenceTable = getDifferenceTable(c);
@@ -513,13 +520,24 @@ function getDegreesOfProducts(a,b)
     {
         methodLog(JSON.stringify(cDifferenceTable[i]).replaceAll(",",";"),false, true);
     }
-    methodLog("Stopień potencjalnego drugiego dzielnika: " + deg1);
+    methodLog("Stopień potencjalnego drugiego dzielnika: " + deg2);
 
     let newB = bDifferenceTable[bDifferenceTable.length - 1];
     let theSameNrsInB = areAllElementsEqual(newB);
 
+    if(!theSameNrsInB)
+    {
+        deg1 = -1;
+        return [deg1, deg2];
+    }
+
     let newC = cDifferenceTable[cDifferenceTable.length - 1];
     let theSameNrsInC = areAllElementsEqual(newC);
+    if(!theSameNrsInC)
+    {
+        deg2 = -1;
+        return [deg1, deg2];
+    }
 
     return [deg1, deg2]; //if not constant sequences return skip = true
 }
@@ -663,7 +681,6 @@ function addCol(table, X, Y, step, nrOfSteps)
 }
 
 
-
 function getCoefficients(table)
 {
     let coefficients = [];
@@ -725,9 +742,10 @@ function getDifferenceTable(seq)
 
 function areAllElementsEqual(array)
 {
-    for (const element in array)
+    let firstElement = array[0];
+    for (let i = 0; i < array.length; i++)
     {
-        if(element !== array[0])
+        if(array[i] !== firstElement)
         {
             return false;
         }
